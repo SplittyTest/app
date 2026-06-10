@@ -37,8 +37,9 @@ export class DuckDB implements OLAPDB {
 	}
 
 	private variationFilter(): string {
-		// list_contains(CAST(json_parse(variation_ids) AS LIST(VARCHAR)), ?)
-		return 'list_contains(CAST(json_parse(variation_ids) AS LIST(VARCHAR)), ?)';
+		// variation_ids is stored as a JSON array string, e.g. ["v1","v2"].
+		// DuckDB can cast that text directly to VARCHAR[] for list_contains.
+		return 'list_contains(CAST(variation_ids AS VARCHAR[]), ?)';
 	}
 
 	private segmentSelect(segments?: string[], aliases: string[] = ['segment_a', 'segment_b', 'segment_c']) {
@@ -49,7 +50,7 @@ export class DuckDB implements OLAPDB {
 		const grouping: string[] = [];
 		segments.forEach((segment, idx) => {
 			const alias = aliases[idx];
-			mapped.push(`COALESCE(CAST(json_extract(data, '$.${segment}') AS VARCHAR), '') AS ${alias}`);
+			mapped.push(`COALESCE(json_extract_string(data, '$.${segment}'), '') AS ${alias}`);
 			grouping.push(alias);
 		});
 
@@ -134,7 +135,7 @@ export class DuckDB implements OLAPDB {
 			const sql = `
 				SELECT
 					${select},
-					CAST(COUNT(id) AS INTEGER) AS events and calculate stats,
+					CAST(COUNT(id) AS INTEGER) AS events,
 					${strategy}(value) AS event_value,
 					STDDEV_POP(value) AS standard_deviation
 				FROM events
@@ -276,7 +277,7 @@ export class DuckDB implements OLAPDB {
                 SELECT
                     time_bucket(INTERVAL '${interval}', created_at) AS ts,
                     CAST(COUNT(DISTINCT session_id) AS INTEGER) AS count_views,
-                    CAST(SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) AS INTEGER) AS count_events and calculate stats,
+                    CAST(SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) AS INTEGER) AS count_events,
                     SUM(value) AS sum_value
                 FROM events
                 WHERE
@@ -292,24 +293,18 @@ export class DuckDB implements OLAPDB {
                     SUM(count_views) OVER (ORDER BY ts ASC) AS views,
                     0 AS missing_views, 
                     SUM(count_views) OVER (ORDER BY ts ASC) AS filled_views,
-                    SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) AS events and calculate stats,
-                    0 AS missing_events and calculate stats,
-                    SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) AS filled_events and calculate stats,
-                    (SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS rate,
-                    (SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS filled_rate,
+                    SUM(count_events) OVER (ORDER BY ts ASC) AS events,
+                    0 AS missing_events,
+                    SUM(count_events) OVER (ORDER BY ts ASC) AS filled_events,
+                    (SUM(count_events) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS rate,
+                    (SUM(count_events) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS filled_rate,
                     ${query_calculations}
                 FROM (${variation_stats_query}) sub
             `;
 
 				const rows = await runAll(this.conn, full_query, [
-					variation.id, // for CASE WHEN type = ?
-					// The order of params is tricky because we construct the SQL string with interpolated 'this.variationFilter()'
-					// variationFilter() expects 1 param.
-					// The query is:
-					// ... type = ? ...
-					// ... WHERE list_contains(..., ?) ...
-					metric.event_type, // This goes to type = ?
-					variation.id, // This goes to list_contains(..., ?)
+					metric.event_type, // CASE WHEN type = ?
+					variation.id,      // list_contains(CAST(variation_ids AS VARCHAR[]), ?)
 				]);
 
 				results[variation.id] = rows;
