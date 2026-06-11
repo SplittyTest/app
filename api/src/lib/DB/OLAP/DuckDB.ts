@@ -314,8 +314,26 @@ export class DuckDB implements OLAPDB {
 		return results;
 	}
 
-	async getMetricSegments(metric: Metric, date_range: [Date, Date]) {
-		return [];
+	async getMetricSegments(metric: Metric, date_range: [Date, Date]): Promise<Record<string, any>[]> {
+		try {
+			const sql = `
+				SELECT key AS property,
+					list(DISTINCT json_extract_string(data, '$.' || key)) AS values
+				FROM events, unnest(json_keys(data)) AS t(key)
+				WHERE type = ?
+					AND created_at BETWEEN ? AND ?
+				GROUP BY key
+			`;
+			const rows = await runAll(this.conn, sql, [
+				metric.event_type,
+				dayjs(date_range[0]).toISOString(),
+				dayjs(date_range[1]).toISOString(),
+			]);
+			return rows as Record<string, any>[];
+		} catch (err) {
+			log.error(err);
+			return [];
+		}
 	}
 
 	async getMetricSeriesData(metric: Metric, params: any) {

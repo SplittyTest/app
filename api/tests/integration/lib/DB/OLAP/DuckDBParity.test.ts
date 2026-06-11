@@ -52,4 +52,12 @@ describe('DuckDB ↔ ClickHouse parity', () => {
 		expect(rows.length).toBe(1);
 		expect(rows[0].subject_id).toBe('sub1');
 	});
+
+	test('getMetricSegments discovers data keys and their distinct values', async () => {
+		const metric: any = { event_type: 'click' };
+		const segments = (await olap.getMetricSegments(metric, [new Date('2000-01-01'), new Date('2100-01-01')])) as any[];
+		const country = segments.find((s: any) => s.property === 'country');
+		expect(country).toBeDefined();
+		expect(country.values.sort()).toEqual(['CA', 'US']);
+	});
 });
