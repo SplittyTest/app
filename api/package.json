@@ -107,7 +107,7 @@
     "migrate:postgres": "MIGRATOR_TYPE=store STORE_TYPE=postgres ts-node -P migrate.tsconfig.json -r tsconfig-paths/register migrate/migrate.ts",
     "migrate:sqlite": "MIGRATOR_TYPE=store STORE_TYPE=sqlite ts-node -P migrate.tsconfig.json -r tsconfig-paths/register migrate/migrate.ts",
     "migrate:clickhouse": "MIGRATOR_TYPE=olap METRICS_TYPE=clickhouse ts-node -P migrate.tsconfig.json -r tsconfig-paths/register migrate/migrate.ts",
-    "migrate:duckdb": "MIGRATOR_TYPE=olap METRICS_TYPE=duckdb ts-node -P migrate.tsconfig.json -r tsconfig-paths/register migrate/migrate.ts",
+    "migrate:duckdb": "MIGRATOR_TYPE=olap OLAP_TYPE=duckdb ts-node -P migrate.tsconfig.json -r tsconfig-paths/register migrate/migrate.ts",
     "setup:clickhouse": "ALLOW_CONFIG_MUTATIONS=yes ts-node -r tsconfig-paths/register src/setup.ts",
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "build:watch": "tsc -w -p tsconfig.json",
