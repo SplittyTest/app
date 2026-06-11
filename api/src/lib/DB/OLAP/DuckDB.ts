@@ -329,6 +329,7 @@ export class DuckDB implements OLAPDB {
 				id: parsed.id,
 				session_id: parsed.session_id,
 				type: parsed.type,
+				subject_id: parsed.subject_id,
 				test_ids: JSON.stringify(parsed.test_ids),
 				variation_ids: JSON.stringify(Object.values(parsed.variation_ids || {})),
 				data: JSON.stringify(parsed.data),
@@ -337,11 +338,12 @@ export class DuckDB implements OLAPDB {
 			};
 			await runExec(
 				this.conn,
-				'INSERT INTO events (id, session_id, type, test_ids, variation_ids, data, value, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+				'INSERT INTO events (id, session_id, type, subject_id, test_ids, variation_ids, data, value, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
 				[
 					row.id,
 					row.session_id,
 					row.type,
+					row.subject_id,
 					row.test_ids,
 					row.variation_ids,
 					row.data,
