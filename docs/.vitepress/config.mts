@@ -110,7 +110,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/SplittyTest/SplittyTest",
+        link: "https://github.com/SplittyTest/app",
       },
       {
         icon: "docker",
