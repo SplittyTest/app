@@ -1,0 +1,126 @@
+
+// Common
+a.no-underline:hover {
+    text-decoration: none;
+}
+.p-component {
+    &::placeholder {
+        color: var(--color-gray-300);
+    }
+}
+.p-invalid {
+    &,
+    &:focus {
+        border-color: var(--color-red-300);
+    }
+
+    &::placeholder {
+        color: var(--color-red-200);
+    }
+}
+
+// Autocomplete Chip
+.p-autocomplete-chip {
+    background-color: var(--color-brand-500);
+    color: var(--color-white);
+    
+    svg path {
+        fill: #7CCCB3;
+    }
+}
+
+// Buttons
+.p-button > .material-icons-two-tone {
+    margin-left: -0.25em;
+}
+.p-button-icon-only > .material-icons-two-tone {
+    margin-left: 0;
+}
+.p-button:focus-visible {
+    outline: 1px solid var(--color-gray-300);
+}
+
+// Cards
+.p-card-body {
+    height: 100%;
+}
+.p-card-content {
+    flex: 1 0;
+}
+.p-card {
+    border: 1px solid #FFF;
+}
+
+// Data Table
+.p-datatable-tbody > tr > td {
+    font-size: 0.875em;
+}
+.p-datatable-header-cell.text-center div {
+    justify-content: center;
+}
+.p-datatable-header-cell.text-right div {
+    justify-content: flex-end;
+}
+
+// Dialog
+.p-dialog {
+    &.bordered {
+        .p-dialog-header {
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+    
+        .p-dialog-footer {
+            border-top: 1px solid var(--color-gray-200);
+        }
+    }
+}
+.p-dialog-close-button:focus-visible {
+    outline: none;
+}
+
+// Datepicker
+.p-datepicker-other-month span {
+    color: var(--color-gray-300);
+
+    &.p-datepicker-day-selected-range {
+        color: var(--color-brand-300);
+    }
+    
+    &.p-datepicker-day-selected {
+        color: var(--color-brand-50);
+    }
+}
+
+// Input Text
+.p-inputtext:disabled {
+    border-color: var(--color-gray-300);
+    font-style: italic;
+}
+
+// Popup Menu
+.popup-menu-item {
+    color: var(--color-gray-600);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    height: 2.5em;
+    line-height: 2.5em;
+    padding: 0 0.5em;
+}
+
+// Timeline
+.p-timeline-event-content {
+    flex: 2;
+}
+
+// Toast
+.p-toast-message {
+    box-shadow: 0 3px 20px 0 rgba(0,0,0,0.2);
+}
+.p-toast-bottom-right {
+    margin-right:30px;
+}
+
+// Tooltip
+.p-tooltip pre {
+    font-size: 13px;
+}

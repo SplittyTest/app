@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+
+:root {
+    --color-app-background: #ffdba0;
+    --app-background: linear-gradient(to top right, #df711b, transparent),
+        linear-gradient(to bottom right, #fce49c, transparent),
+        linear-gradient(to left, #ffb740, transparent);
+    --border-radius: 12px;
+    --box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+
+    --p-autocomplete-placeholder-color: var(--color-gray-300);
+
+    --p-blockui-border-radius: 12px;
+
+    --p-button-outlined-primary-active-background: var(--color-brand-50);
+    --p-button-outlined-primary-hover-background: var(--color-brand-50);
+    --p-button-outlined-primary-border-color: var(--color-brand-100);
+    --p-button-outlined-primary-color: var(--color-brand-500);
+    --p-button-primary-active-background: var(--color-brand-300);
+    --p-button-primary-active-border-color: var(--color-brand-300);
+    --p-button-primary-hover-background: var(--color-brand-400);
+    --p-button-primary-hover-border-color: var(--color-brand-500);
+    --p-button-primary-background: var(--color-brand-500);
+    --p-button-primary-border-color: var(--color-brand-500);
+    --p-button-primary-color: var(--color-white);
+    --p-button-text-secondary-hover-background: var(--color-gray-100);
+    --p-button-padding-x: 1.5em;
+
+    /* --p-card-background: rgba(255,255,255,0.9); */
+    --p-card-body-gap: 1em;
+    --p-card-caption-gap: 0;
+    --p-card-shadow: 0 5px 10px 0 rgba(0,0,0,0.1);
+
+    --p-datatable-header-cell-background: var(--color-gray-200);
+    --p-datatable-header-cell-color: var(--color-gray-700);
+    --p-datatable-header-cell-selected-background: var(--color-gray-200);
+    --p-datatable-header-cell-selected-color: var(--color-gray-900);
+    --p-datatable-row-background: transparent;
+    --p-datatable-row-hover-background: var(--color-brand-highlight);
+
+    --p-dialog-content-padding: 1.5em;
+    --p-dialog-footer-padding: 1.5em;
+    --p-dialog-header-padding: 0.75em 1.5em;
+
+    --p-fieldset-background: transparent;
+    --p-fieldset-legend-background: transparent;
+
+    --p-inputgroup-addon-background: var(--color-gray-100);
+
+    --p-inputtext-border-color: var(--color-gray-300);
+    --p-inputtext-focus-border-color: var(--color-brand-200);
+    --p-inputtext-disabled-background: var(--color-gray-100);
+    --p-inputtext-disabled-color: var(--color-gray-400);
+
+    --p-menu-item-focus-background: #EEFAFB;
+    --p-menubar-border-color: transparent;
+    --p-menubar-gap: 2em;
+    
+    --p-message-text-font-size: 0.875rem;
+
+    --p-multiselect-placeholder-color: var(--color-gray-300);
+    
+    --p-popover-arrow-offset: 18px;
+
+    --p-progressspinner-color-one: #29a1aa;
+    --p-progressspinner-color-two: #ffb740;
+    --p-progressspinner-color-three: #df711b;
+    --p-progressspinner-color-four: #7046a2;
+    
+    --p-select-focus-border-color: var(--color-brand-200);
+    --p-select-placeholder-color: var(--color-gray-300);
+    
+    --p-tabs-tablist-background: transparent;
+    --p-tabs-tablist-border-color: var(--color-accent-100);
+    --p-tabs-tab-border-color: var(--color-accent-100);
+    --p-tabs-tab-hover-border-color: var(--color-accent);
+    --p-tabs-tab-active-border-color: var(--color-accent);
+    --p-tabs-tab-color: var(--color-gray-400);
+    --p-tabs-tab-hover-color: var(--color-accent-200);
+    --p-tabs-tab-active-color: var(--color-accent);
+    --p-tabs-tab-padding: 1em 2em;
+    
+    --p-toast-border-width: 0;
+
+    --p-toggleswitch-checked-background: var(--color-brand-500);
+
+    --p-tooltip-max-width: 100%;
+}
+
+@theme {
+    --breakpoint-3xl: 1920px;
+    
+    --color-brand: #29A1AA;
+    --color-brand-background: #EEFAFB;
+    --color-brand-highlight: #F7FDFD;
+    --color-brand-50: #C9EFF2;
+    --color-brand-100: #A3E4E9;
+    --color-brand-200: #7ED9E0;
+    --color-brand-300: #59CED7;
+    --color-brand-400: #33C3CE;
+    --color-brand-500: #29A1AA;
+    --color-brand-600: #207E85;
+    --color-brand-700: #175A5F;
+    --color-brand-800: #0E373A;
+    --color-brand-900: #051315;
+    
+    --color-alt: #90BE6D;
+    --color-alt-50: #F2F7ED;
+    --color-alt-100: #D9E9CD;
+    --color-alt-200: #C1DBAD;
+    --color-alt-300: #A8CC8D;
+    --color-alt-400: #90BE6D;
+    --color-alt-500: #78AF4E;
+    --color-alt-600: #628F40;
+    --color-alt-700: #4C6F31;
+    --color-alt-800: #364F23;
+    --color-alt-900: #202E15;
+    
+    --color-accent: #5A3882;
+    --color-accent-50: #E7DFF1;
+    --color-accent-100: #CFBFE3;
+    --color-accent-200: #B79ED5;
+    --color-accent-300: #A07EC7;
+    --color-accent-400: #885DB9;
+    --color-accent-500: #7046A2;
+    --color-accent-600: #5A3882;
+    --color-accent-700: #442A62;
+    --color-accent-800: #2D1C41;
+    --color-accent-900: #170E21;
+    
+    --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+    --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+    
+    --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Noto Serif", Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: "Roboto Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    
+    --spacing: 10px;
+
+    --text-3xl: 3rem !important;
+}

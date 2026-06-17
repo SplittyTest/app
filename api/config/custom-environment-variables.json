@@ -1,0 +1,58 @@
+{
+    "auth": {
+        "secret": "AUTH_SECRET"
+    },
+    "ui": {
+        "path": "UI_PATH"
+    },
+    "db": {
+        "dict": {
+            "type": "DICT_TYPE",
+            "redis": {
+                "host": "REDIS_HOST",
+                "port": "REDIS_PORT",
+                "password": "REDIS_PASSWORD",
+                "username": "REDIS_USERNAME"
+            }
+        },
+        "store": {
+            "type": "STORE_TYPE",
+            "postgres": {
+                "host": "POSTGRES_HOST",
+                "port": "POSTGRES_PORT",
+                "user": "POSTGRES_USER",
+                "password": "POSTGRES_PASSWORD",
+                "database": "POSTGRES_DATABASE"
+            },
+            "sqlite": {
+                "path": "SQLITE_PATH"
+            }
+        },
+        "olap": {
+            "type": "OLAP_TYPE",
+            "clickhouse": {
+                "url": "CLICKHOUSE_URL",
+                "username": "CLICKHOUSE_USERNAME",
+                "password": "CLICKHOUSE_PASSWORD",
+                "database": "CLICKHOUSE_DATABASE"
+            },
+            "duckdb": {
+                "path": "DUCKDB_PATH"
+            }
+        }
+    },
+    "email": {
+        "transport": {
+            "auth": {
+                "api_key": "MAILGUN_API_KEY",
+                "domain": "MAILGUN_DOMAIN"
+            }
+        }
+    },
+    "session": {
+        "key": "SESSION_SECRET"
+    },
+    "migrator": {
+        "type": "MIGRATOR_TYPE"
+    }
+}

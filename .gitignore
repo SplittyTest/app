@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+api/.env
+ui/.env
+
+# Dependencies
+api/node_modules/
+ui/node_modules/
+node_modules/
+
+# Coverage
+coverage
+
+# Transpiled files
+dist/
+
+# VS Code
+.vscode
+!.vscode/tasks.js
+
+# JetBrains IDEs
+.idea/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Misc
+.DS_Store
+NOTES.MD
+
+# Vitepress
+docs/.vitepress/dist
+docs/.vitepress/cache

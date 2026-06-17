@@ -1,0 +1,15 @@
+FROM node:20-trixie AS migrator
+
+USER root
+
+WORKDIR /app
+
+RUN apt-get update
+
+USER node
+
+COPY --chown=node:node api .
+
+RUN npm ci
+
+ENTRYPOINT ["npm", "run"]

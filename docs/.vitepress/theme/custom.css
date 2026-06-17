@@ -1,0 +1,55 @@
+/* .vitepress/theme/custom.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+@import 'tailwindcss';
+
+:root {
+    /* Primary brand colors */
+    --vp-c-brand-1: #29a1aa;
+    /* Main accent color */
+    --vp-c-brand-2: #5a3882;
+    /* Hover state */
+    --vp-c-brand-3: #ffb740;
+    /* Lighter shade */
+}
+
+.vp-doc.container {
+    max-width: 100% !important;
+    padding: 0 !important;
+}
+
+.VPHero .image-src {
+    max-width: 600px;
+    /* Adjust to your preferred width */
+}
+
+.VPNavBarTitle .logo {
+    height: 40px;
+    /* Increase this value to make the logo larger (default is 24px) */
+    max-height: none;
+}
+
+.mono {
+    font-family:'Roboto Mono', monospace;
+    font-size: 0.875rem !important;
+}
+
+.nowrap {
+    color: var(--vp-c-brand-2);
+    font-weight: bold;
+    overflow: auto;
+    white-space: nowrap;
+}
+
+.medium-zoom-image--opened {
+    z-index: 999;
+}
+
+.vp-doc table {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.vp-doc tr:nth-child(2n) {
+    background-color: transparent !important;
+}

@@ -1,0 +1,74 @@
+Splitty Test Source License (STSL 1.0)
+Copyright © 2026 Splitty Test. All rights reserved.
+
+Licensor hereby grants you the right to copy, modify, and run the software
+program delivered with this License (the "Software"), subject to the terms and
+conditions set forth below.
+
+1. Allowed Use and Rights Granted
+   Licensor hereby grants you a worldwide, royalty-free, non-exclusive right to
+   copy, modify, and run the Software for any personal, non-commercial, or
+   commercial purpose, subject to the restrictions set forth in Section 2
+   below.
+
+For the avoidance of doubt, this License does not grant you the right to
+redistribute the Software or any modified versions/derivative works thereof (in
+whole or in part, in source or binary form) to any third party, except for the
+sole purpose of submitting Contributions to the Licensor as outlined in Section
+5.
+
+2. Commercial Service Restriction
+   You may use and modify the Software to power your own business
+   infrastructure, internal operations, or internal applications for free.
+   However, you are subject to the following explicit exclusion:
+
+   - Commercial Service Restriction: You may not use or package the Software to
+     provide, sell, or sublicense a paid service, managed service, or
+     cloud-hosted offering where the primary value or a substantial portion of
+     the service relies on the functionality of the Software (including, but not
+     limited to, Software-as-a-Service (SaaS), Platform-as-a-Service (PaaS), or
+     Infrastructure-as-a-Service (IaaS)).
+
+If your intended use violates any of the restrictions in this License, you must
+obtain a separate, written commercial license from the Licensor.
+
+3. Intellectual Property Ownership
+   Licensor retains all right, title, and interest in and to the Software, 
+   including all intellectual property rights therein. No implied licenses are 
+   granted under this License.
+
+4. Notices
+   You must include a copy of this License and retain all copyright, trademark, 
+   and patent notices from the original Software in all copies or derivative 
+   works that you distribute.
+
+5. Inbound Contributions and Ownership
+   By submitting any modification, bug fix, patch, feature request, suggestion,
+   or other contribution to the Software (collectively, "Contributions") to the 
+   Licensor or to any public repository maintained by the Licensor, you hereby 
+   irrevocably assign, transfer, and convey to Splitty Test all right, title,
+   and interest worldwide in and to such Contributions, including all
+   intellectual property rights therein (such as copyrights and patent rights).
+
+   - No Obligation: Splitty Test is under no obligation to accept, review, or 
+     incorporate any Contributions into the Software.
+
+   - Contributor Warranty: You represent and warrant that you are the sole and 
+     rightful owner of the Contributions you submit, or that you have the 
+     explicit legal authority from your employer or the copyright owner to 
+     submit them under these terms.
+
+6. Term and Termination
+   This License is effective until terminated. Your rights under this License 
+   will terminate automatically without notice from the Licensor if you fail to 
+   comply with any of its terms. Upon termination, you must cease all use and 
+   destroy all copies of the Software.
+
+7. Disclaimer of Warranty
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER 
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING 
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+   IN THE SOFTWARE.

@@ -1,0 +1,4 @@
+.vscode/keybindings.json
+.vscode/settings.json
+local.js*
+test.js*
