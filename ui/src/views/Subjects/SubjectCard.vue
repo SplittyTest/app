@@ -51,7 +51,7 @@
                 <Menu ref="menu" :model="menu" :popup="true">
                     <template #item="{ item }">
                         <div class="popup-menu-item flex-row">
-                            <div class="icon-box">
+                            <div :class="['icon-box', item.icon_color]">
                                 <Icon :type="item.icon" color="white" size="16px"/>
                             </div>
                              {{ item.label }}
@@ -79,13 +79,15 @@ export default defineComponent({
         menu() {
             const menu_items: any[] = [
                 { 
-                    label: 'Edit Test Subject', 
-                    icon: 'edit',
+                    label: 'Edit Test Subject',
+                    icon_color: 'bg-alt-500!',
+                    icon: 'Edit',
                     command: this.editSubject
                 },
                 {
                     label: 'Duplicate Test Subject',
-                    icon: 'content-copy',
+                    icon_color: 'bg-alt-500!',
+                    icon: 'Content Copy',
                     command: this.duplicateSubject
                 }
             ];
@@ -93,8 +95,17 @@ export default defineComponent({
             if (+this.subject.active_tests === 0) {
                 menu_items.push({
                     label: 'Delete Test Subject',
-                    icon: 'delete',
+                    icon_color: 'bg-red-500!',
+                    icon: 'Delete',
                     command: this.deleteSubject 
+                });
+            }
+            else {
+                menu_items.push({
+                    label: 'Stop Tests to Delete',
+                    icon_color: 'bg-gray-400!',
+                    icon: 'Delete Forever',
+                    command: () => {}
                 });
             }
 
@@ -193,7 +204,9 @@ export default defineComponent({
     background-color: var(--color-alt);
     border-radius: 5px;
     display: flex;
+    height: 24px;
     justify-content: center;
     padding: 0.25em;
+    width: 24px;
 }
 </style>
