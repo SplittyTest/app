@@ -643,6 +643,7 @@ export class ClickHouse implements OLAPDB {
 		let grouping_select = '';
 		let joined_grouping_select = '';
 		let group_by = 'GROUP BY ts';
+		let sessions_group_by = group_by;
 		let joined_group_by = '';
 		let partition_by = '';
 		let join_on = 's.ts = e.ts';
@@ -654,6 +655,7 @@ export class ClickHouse implements OLAPDB {
 			joined_grouping_select =
 				params.group_by === 'variation_id' ? 'e.variation_id as variation_id,' : 'e.test_id as test_id,';
 			group_by += `, ${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
+			sessions_group_by = group_by;
 			joined_group_by = `GROUP BY ts, sessions, ts_sessions, events, ts_events, rate, ts_rate, e.raw_event_value, e.raw_ts_event_value, ${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
 			partition_by = params.group_by === 'variation_id' ? 'PARTITION BY variation_id ' : 'PARTITION BY test_id ';
 			join_on += ` AND s.${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'} = e.${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
@@ -712,8 +714,7 @@ export class ClickHouse implements OLAPDB {
 
 		// Only get stats for control
 		if (params.control) {
-			segment_filters += "AND variation_id LIKE '%-A'\n";
-			grouping_select = 'arrayJoin(variation_ids) as variation_id,';
+			segment_filters += "AND arrayExists(x -> x LIKE '%-A', variation_ids)\n";
 			group_by = 'GROUP BY ts';
 			partition_by = '';
 		}
@@ -733,6 +734,12 @@ export class ClickHouse implements OLAPDB {
 		`;
 
 		// Pre-aggregate events based on session_strategy
+		let event_values_group_by = `GROUP BY session_id, data`;
+		if (params.group_by === 'variation_id') {
+			event_values_group_by += ', variation_id';
+		} else if (params.group_by === 'test_id') {
+			event_values_group_by += ', test_id';
+		}
 		let event_values_query = `
 				SELECT
 					min(created_at) AS ts,
@@ -747,7 +754,7 @@ export class ClickHouse implements OLAPDB {
 					AND type = { event_type: String }
 					AND subject_id = { subject_id: String }
 					${segment_filters}
-				GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+				${event_values_group_by}
 				ORDER BY ts ASC
 			`;
 		if (metric.session_strategy) {
@@ -767,7 +774,7 @@ export class ClickHouse implements OLAPDB {
 							AND type = { event_type: String }
 							AND subject_id = { subject_id: String }
 							${segment_filters}
-						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						${event_values_group_by}
 						ORDER BY ts ASC
 					`;
 					break;
@@ -786,7 +793,7 @@ export class ClickHouse implements OLAPDB {
 							AND type = { event_type: String }
 							AND subject_id = { subject_id: String }
 							${segment_filters}
-						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						${event_values_group_by}
 						ORDER BY ts ASC
 					`;
 					break;
@@ -805,7 +812,7 @@ export class ClickHouse implements OLAPDB {
 							AND type = { event_type: String }
 							AND subject_id = { subject_id: String }
 							${segment_filters}
-						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						${event_values_group_by}
 						ORDER BY ts ASC
 					`;
 					break;
@@ -824,7 +831,7 @@ export class ClickHouse implements OLAPDB {
 							AND type = { event_type: String }
 							AND subject_id = { subject_id: String }
 							${segment_filters}
-						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						${event_values_group_by}
 						ORDER BY ts ASC
 					`;
 					break;
@@ -843,7 +850,7 @@ export class ClickHouse implements OLAPDB {
 							AND type = { event_type: String }
 							AND subject_id = { subject_id: String }
 							${segment_filters}
-						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						${event_values_group_by}
 						ORDER BY ts ASC
 					`;
 					break;

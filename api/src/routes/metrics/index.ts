@@ -62,7 +62,7 @@ export default function (router: Router) {
 		const date_range = (req.query as any).date_range as [Date, Date];
 		const segments = (req.query as any).segments as Record<string, any>;
 		const group_by = (req.query as any).group_by as 'variation_id' | 'test_id' | 'aggregate';
-		const control = (req.query as any).control === 'true';
+		const control = (req.query as any).control === true || (req.query as any).control === 'true';
 		const metric = await DB.Metrics.getById(req.params.id);
 
 		if (metric) {

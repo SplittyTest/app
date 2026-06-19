@@ -109,10 +109,10 @@ export default defineComponent({
                     return 'Web';
                     break;
                 case 'app':
-                    return 'Mobile Friendly';
+                    return 'Phone Android';
                     break;
                 case 'other':
-                    return 'Devices';
+                    return 'Devices Other';
                     break;
             }
         },

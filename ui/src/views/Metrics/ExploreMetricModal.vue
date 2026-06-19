@@ -179,7 +179,7 @@
                                 </Column>
                                 <Column v-if="query.group_by === 'test_id'" field="test_id" header="Test ID">
                                     <template #body="row">
-                                        {{ row.data.test_id || 'No Test' }}
+                                        {{ row.data.test_id || 'Aggregated' }}
                                     </template>
                                 </Column>
                                 <Column field="ts_sessions" header="Sessions" header-class="text-right" class="border-l border-l-gray-200 text-right">
@@ -541,6 +541,8 @@ export default defineComponent({
                 date_range: this.query.date_range,
                 segments: this.query.segments,
             };
+
+            console.log(1111, params);
 
             if (this.query.group_by === 'test_id') {
                 params.group_by = 'test_id';
