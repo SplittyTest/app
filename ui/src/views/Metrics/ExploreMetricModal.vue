@@ -477,8 +477,18 @@ export default defineComponent({
                 return num(value);
             }
         },
+        reset() {
+            this.query = {
+                date_range: [dayjs().startOf('day').subtract(12, 'weeks').toDate(), dayjs().endOf('day').toDate()],
+                group_by: 'aggregate',
+                segments: {},
+                control: false,
+            };
+            this.chart_value = 'variation_score';
+        },
         async open() {
             if (this.metricId) {
+                this.reset();
                 this.loading = true;
                 this.show_modal = true;
                 await this.getMetric();

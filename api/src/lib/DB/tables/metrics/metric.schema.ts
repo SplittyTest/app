@@ -22,8 +22,8 @@ export const zMetricSchema = z.object({
 	sorting_type: z.enum(['max', 'min']),
 	/** The strategy used to count sessions for this metric (default: 'multiple') */
 	session_strategy: z
-		.enum(['multiple', 'unique_first', 'unique_last', 'unique_sum', 'unique_avg', 'unique_median'])
-		.default('multiple'),
+		.enum(['all', 'unique_first', 'unique_last', 'unique_sum', 'unique_avg', 'unique_median'])
+		.default('all'),
 	/** Set to TRUE to log events when tests are not running */
 	idle_logging: z.boolean(),
 	/** The percentage of events to log when tests are not running (as a decimal) */

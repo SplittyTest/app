@@ -355,7 +355,7 @@ export default defineComponent({
         },
         async deleteTest() {
             this.$confirm.require({
-                group: 'dialog',
+                group: 'confirmation',
                 severity: 'danger',
                 header: 'Delete Test',
                 message: `Are you sure you want to delete the test <strong>${this.test.name}</strong>? This cannot be undone.`,

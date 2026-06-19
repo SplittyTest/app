@@ -174,29 +174,108 @@ export class ClickHouse implements OLAPDB {
 				select_fields = "'' AS segment_a,";
 			}
 
-			//
-			let event_count = `count() AS count,`;
-			let value_calculation = 'sum(value) AS value';
+			// Pre-aggregate events based on session_strategy
+			let event_values_query = `
+				SELECT
+					min(created_at) AS ts,
+					session_id,
+					data,
+					count() AS count,
+					sum(value) AS value
+				FROM ${this.database}.events
+				WHERE
+					has(variation_ids, { variation_id: String })
+					AND type = { event_type: String }
+					AND created_at > { min_date: DateTime }
+				GROUP BY session_id, data
+				ORDER BY ts ASC
+			`;
 			if (params.session_strategy) {
 				switch (params.session_strategy) {
 					case 'unique_first':
-						event_count = 'uniqExact(session_id) AS count,';
-						value_calculation = 'argMin(value, created_at) AS value';
+						event_values_query = `
+								SELECT
+									min(created_at) AS ts,
+									session_id,
+									data,
+									uniqExact(session_id) AS count,
+									argMin(value, created_at) AS value
+								FROM ${this.database}.events
+								WHERE
+									has(variation_ids, { variation_id: String })
+									AND type = { event_type: String }
+									AND created_at > { min_date: DateTime }
+								GROUP BY session_id, data
+								ORDER BY ts ASC
+							`;
 						break;
 					case 'unique_last':
-						event_count = 'uniqExact(session_id) AS count,';
-						value_calculation = 'argMax(value, created_at) AS value';
+						event_values_query = `
+							SELECT
+								min(created_at) AS ts,
+								session_id,
+								data,
+								uniqExact(session_id) AS count,
+								argMax(value, created_at) AS value
+							FROM ${this.database}.events
+							WHERE
+								has(variation_ids, { variation_id: String })
+								AND type = { event_type: String }
+								AND created_at > { min_date: DateTime }
+							GROUP BY session_id, data
+							ORDER BY ts ASC
+						`;
 						break;
 					case 'unique_sum':
-						event_count = 'uniqExact(session_id) AS count,';
+						event_values_query = `
+							SELECT
+								min(created_at) AS ts,
+								session_id,
+								data,
+								uniqExact(session_id) AS count,
+								sum(value) AS value
+							FROM ${this.database}.events
+							WHERE
+								has(variation_ids, { variation_id: String })
+								AND type = { event_type: String }
+								AND created_at > { min_date: DateTime }
+							GROUP BY session_id, data
+							ORDER BY ts ASC
+						`;
 						break;
 					case 'unique_avg':
-						event_count = 'uniqExact(session_id) AS count,';
-						value_calculation = 'avg(value) AS value';
+						event_values_query = `
+							SELECT
+								min(created_at) AS ts,
+								session_id,
+								data,
+								uniqExact(session_id) AS count,
+								avg(value) AS value
+							FROM ${this.database}.events
+							WHERE
+								has(variation_ids, { variation_id: String })
+								AND type = { event_type: String }
+								AND created_at > { min_date: DateTime }
+							GROUP BY session_id, data
+							ORDER BY ts ASC
+						`;
 						break;
 					case 'unique_median':
-						event_count = 'uniqExact(session_id) AS count,';
-						value_calculation = 'median(value) AS value';
+						event_values_query = `
+							SELECT
+								min(created_at) AS ts,
+								session_id,
+								data,
+								uniqExact(session_id) AS count,
+								median(value) AS value
+							FROM ${this.database}.events
+							WHERE
+								has(variation_ids, { variation_id: String })
+								AND type = { event_type: String }
+								AND created_at > { min_date: DateTime }
+							GROUP BY session_id, data
+							ORDER BY ts ASC
+						`;
 						break;
 				}
 			}
@@ -208,21 +287,11 @@ export class ClickHouse implements OLAPDB {
 			}
 			const events_query = `
 				WITH EventValues AS (
-					SELECT
-						data,
-						${event_count}
-						${value_calculation}
-					FROM ${this.database}.events
-					WHERE
-						has(variation_ids, { variation_id: String })
-						AND type = { event_type: String }
-						AND created_at > { min_date: DateTime }
-					GROUP BY session_id
-					ORDER BY created_at ASC
+					${event_values_query}
 				)
                 SELECT
                     ${select_fields}
-                    count(id) AS events,
+                    count AS events,
                     ${query_strategy}(value) AS event_value,
                     stddevPop(value) AS standard_deviation
                 FROM EventValues
@@ -280,42 +349,42 @@ export class ClickHouse implements OLAPDB {
 		let query_calculations = '';
 		if (metric.strategy === 'rate') {
 			event_calculations = `
-				sum(sum(value)) OVER (ORDER BY ts ASC) AS event_value
+				sum(sum(value)) OVER (ORDER BY ts ASC) AS raw_event_value
 			`;
 			query_calculations = `
 				(missing_events * { default_value: Float32 }) AS missing_event_value,
-				(event_value + missing_event_value) AS filled_event_value,
-				(event_value / views) AS variation_score,
+				(raw_event_value + missing_event_value) AS filled_event_value,
+				(raw_event_value / views) AS variation_score,
 				(filled_event_value / filled_views) AS filled_variation_score
 			`;
 		} else if (metric.strategy === 'avg') {
 			event_calculations = `
-				avgWeighted(avg(value), events) OVER (ORDER BY ts ASC) AS event_value
+				avgWeighted(avg(value), events) OVER (ORDER BY ts ASC) AS raw_event_value
 			`;
 			query_calculations = `
 				{ default_value: Float32 } AS missing_event_value,
-				(((event_value * events) + (missing_event_value * missing_events)) / filled_events) AS filled_event_value,
-				event_value AS variation_score,
+				(((raw_event_value * events) + (missing_event_value * missing_events)) / filled_events) AS filled_event_value,
+				raw_event_value AS variation_score,
 				filled_event_value AS filled_variation_score
 			`;
 		} else if (metric.strategy === 'sum') {
 			event_calculations = `
-				sum(sum(value)) OVER (ORDER BY ts ASC) AS event_value
+				sum(sum(value)) OVER (ORDER BY ts ASC) AS raw_event_value
 			`;
 			query_calculations = `
 				(missing_events * { default_value: Float32 }) AS missing_event_value,
-				(event_value + missing_event_value) AS filled_event_value,
-				event_value AS variation_score,
+				(raw_event_value + missing_event_value) AS filled_event_value,
+				raw_event_value AS variation_score,
 				filled_event_value AS filled_variation_score
 			`;
 		} else if (metric.strategy === 'median') {
 			event_calculations = `
-				medianWeighted(median(value), events) OVER (ORDER BY ts ASC) AS event_value
+				medianWeighted(median(value), events) OVER (ORDER BY ts ASC) AS raw_event_value
 			`;
 			query_calculations = `
 				{ default_value: Float32 } AS missing_event_value,
-				if(events > missing_events, event_value, missing_event_value) AS filled_event_value,
-				event_value AS variation_score,
+				if(events > missing_events, raw_event_value, missing_event_value) AS filled_event_value,
+				raw_event_value AS variation_score,
 				filled_event_value AS filled_variation_score
 			`;
 		}
@@ -334,6 +403,118 @@ export class ClickHouse implements OLAPDB {
 		const variations = test.variations.filter((v) => {
 			return v.status !== 'paused';
 		});
+
+		// Pre-aggregate events based on session_strategy
+		let event_values_query = `
+				SELECT
+					min(created_at) AS ts,
+					session_id,
+					data,
+					count() AS count,
+					sum(value) AS value
+				FROM ${this.database}.events
+				WHERE
+					created_at > { min_date: DateTime }
+					AND type = { event_type: String }
+					AND has(variation_ids, { variation_id: String })
+					${segment_filters}
+				GROUP BY session_id, data
+				ORDER BY ts ASC
+			`;
+		if (metric.session_strategy) {
+			switch (metric.session_strategy) {
+				case 'unique_first':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							uniqExact(session_id) AS count,
+							argMin(value, created_at) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at > { min_date: DateTime }
+							AND type = { event_type: String }
+							AND has(variation_ids, { variation_id: String })
+							${segment_filters}
+						GROUP BY session_id, data
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_last':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							uniqExact(session_id) AS count,
+							argMax(value, created_at) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at > { min_date: DateTime }
+							AND type = { event_type: String }
+							AND has(variation_ids, { variation_id: String })
+							${segment_filters}
+						GROUP BY session_id, data
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_sum':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							uniqExact(session_id) AS count,
+							sum(value) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at > { min_date: DateTime }
+							AND type = { event_type: String }
+							AND has(variation_ids, { variation_id: String })
+							${segment_filters}
+						GROUP BY session_id, data
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_avg':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							uniqExact(session_id) AS count,
+							avg(value) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at > { min_date: DateTime }
+							AND type = { event_type: String }
+							AND has(variation_ids, { variation_id: String })
+							${segment_filters}
+						GROUP BY session_id, data
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_median':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							uniqExact(session_id) AS count,
+							median(value) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at > { min_date: DateTime }
+							AND type = { event_type: String }
+							AND has(variation_ids, { variation_id: String })
+							${segment_filters}
+						GROUP BY session_id, data
+						ORDER BY ts ASC
+					`;
+					break;
+			}
+		}
 
 		const results: Record<string, any> = {};
 		await asyncForEach(
@@ -355,20 +536,18 @@ export class ClickHouse implements OLAPDB {
 						ORDER BY ts ASC WITH FILL STEP ${fill_interval}
 							INTERPOLATE (views, missing_views, filled_views)
 					),
+					EventValues AS (
+						${event_values_query}
+					),
 					Events AS (
 						SELECT
-							DISTINCT toStartOfInterval(created_at, INTERVAL ${interval}) AS ts,
-							sum(count()) OVER (ORDER BY ts ASC) AS events,
+							DISTINCT toStartOfInterval(ts, INTERVAL ${interval}) AS ts,
+							sum(sum(count)) OVER (ORDER BY ts ASC) AS events,
 							${event_calculations}
-						FROM ${this.database}.events
-						WHERE
-							created_at > { min_date: DateTime }
-							AND type = { event_type: String }
-							AND has(variation_ids, { variation_id: String })
-							${segment_filters}
+						FROM EventValues
 						GROUP BY ts
 						ORDER BY ts ASC WITH FILL STEP ${fill_interval}
-							INTERPOLATE (events, event_value)
+							INTERPOLATE (events, raw_event_value)
 					)
 					SELECT
 						s.ts AS ts,
@@ -475,7 +654,7 @@ export class ClickHouse implements OLAPDB {
 			joined_grouping_select =
 				params.group_by === 'variation_id' ? 'e.variation_id as variation_id,' : 'e.test_id as test_id,';
 			group_by += `, ${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
-			joined_group_by = `GROUP BY ts, sessions, ts_sessions, events, ts_events, rate, ts_rate, event_value, ts_event_value, ${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
+			joined_group_by = `GROUP BY ts, sessions, ts_sessions, events, ts_events, rate, ts_rate, e.raw_event_value, e.raw_ts_event_value, ${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
 			partition_by = params.group_by === 'variation_id' ? 'PARTITION BY variation_id ' : 'PARTITION BY test_id ';
 			join_on += ` AND s.${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'} = e.${params.group_by === 'variation_id' ? 'variation_id' : 'test_id'}`;
 		}
@@ -485,39 +664,39 @@ export class ClickHouse implements OLAPDB {
 		let query_calculations = '';
 		if (metric.strategy === 'rate') {
 			event_calculations = `
-				sum(sum(value)) OVER (${partition_by}ORDER BY ts ASC) AS event_value,
-				sum(value) AS ts_event_value
+				sum(sum(value)) OVER (${partition_by}ORDER BY ts ASC) AS raw_event_value,
+				sum(value) AS raw_ts_event_value
+			`;
+			query_calculations = `
+				(raw_event_value / sessions) AS variation_score,
+				(raw_ts_event_value / ts_sessions) AS ts_variation_score
+			`;
+		} else if (metric.strategy === 'avg') {
+			event_calculations = `
+				avgWeighted(avg(value), ts_events) OVER (${partition_by}ORDER BY ts ASC) AS raw_event_value,
+				avg(value) AS raw_ts_event_value
+			`;
+			query_calculations = `
+				(raw_event_value / sessions) AS variation_score,
+				(raw_ts_event_value / ts_sessions) AS ts_variation_score
+			`;
+		} else if (metric.strategy === 'sum') {
+			event_calculations = `
+				sum(sum(value)) OVER (${partition_by}ORDER BY ts ASC) AS raw_event_value,
+				sum(value) AS raw_ts_event_value
 			`;
 			query_calculations = `
 				(event_value / sessions) AS variation_score,
 				(ts_event_value / ts_sessions) AS ts_variation_score
 			`;
-		} else if (metric.strategy === 'avg') {
-			event_calculations = `
-				avgWeighted(avg(value), ts_events) OVER (${partition_by}ORDER BY ts ASC) AS event_value,
-				avg(value) AS ts_event_value
-			`;
-			query_calculations = `
-				event_value AS variation_score,
-				ts_event_value AS ts_variation_score
-			`;
-		} else if (metric.strategy === 'sum') {
-			event_calculations = `
-				sum(sum(value)) OVER (${partition_by}ORDER BY ts ASC) AS event_value,
-				sum(value) AS ts_event_value
-			`;
-			query_calculations = `
-				event_value AS variation_score,
-				ts_event_value AS ts_variation_score
-			`;
 		} else if (metric.strategy === 'median') {
 			event_calculations = `
-				medianWeighted(median(value), ts_events) OVER (${partition_by}ORDER BY ts ASC) AS event_value,
-				median(value) AS ts_event_value
+				medianWeighted(median(value), ts_events) OVER (${partition_by}ORDER BY ts ASC) AS raw_event_value,
+				median(value) AS raw_ts_event_value
 			`;
 			query_calculations = `
-				event_value AS variation_score,
-				ts_event_value AS ts_variation_score
+				(event_value / sessions) AS variation_score,
+				(ts_event_value / ts_sessions) AS ts_variation_score
 			`;
 		}
 
@@ -553,12 +732,130 @@ export class ClickHouse implements OLAPDB {
 				${segment_filters}
 		`;
 
+		// Pre-aggregate events based on session_strategy
+		let event_values_query = `
+				SELECT
+					min(created_at) AS ts,
+					session_id,
+					data,
+					${grouping_select}
+					count() AS count,
+					sum(value) AS value
+				FROM ${this.database}.events
+				WHERE
+					created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
+					AND type = { event_type: String }
+					AND subject_id = { subject_id: String }
+					${segment_filters}
+				GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+				ORDER BY ts ASC
+			`;
+		if (metric.session_strategy) {
+			switch (metric.session_strategy) {
+				case 'unique_first':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							${grouping_select}
+							uniqExact(session_id) AS count,
+							argMin(value, created_at) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
+							AND type = { event_type: String }
+							AND subject_id = { subject_id: String }
+							${segment_filters}
+						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_last':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							${grouping_select}
+							uniqExact(session_id) AS count,
+							argMax(value, created_at) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
+							AND type = { event_type: String }
+							AND subject_id = { subject_id: String }
+							${segment_filters}
+						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_sum':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							${grouping_select}
+							uniqExact(session_id) AS count,
+							sum(value) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
+							AND type = { event_type: String }
+							AND subject_id = { subject_id: String }
+							${segment_filters}
+						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_avg':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							${grouping_select}
+							uniqExact(session_id) AS count,
+							avg(value) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
+							AND type = { event_type: String }
+							AND subject_id = { subject_id: String }
+							${segment_filters}
+						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						ORDER BY ts ASC
+					`;
+					break;
+				case 'unique_median':
+					event_values_query = `
+						SELECT
+							min(created_at) AS ts,
+							session_id,
+							data,
+							${grouping_select}
+							uniqExact(session_id) AS count,
+							median(value) AS value
+						FROM ${this.database}.events
+						WHERE
+							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
+							AND type = { event_type: String }
+							AND subject_id = { subject_id: String }
+							${segment_filters}
+						GROUP BY session_id, data ${params.group_by === 'variation_id' ? ', variation_id' : params.group_by === 'test_id' ? ', test_id' : ''}
+						ORDER BY ts ASC
+					`;
+					break;
+			}
+		}
+
 		const metric_series_query = `
 			WITH Sessions AS (
 				SELECT
-					DISTINCT toStartOfInterval(created_at, INTERVAL ${interval}) AS ts,
+					toStartOfInterval(created_at, INTERVAL ${interval}) AS ts,
 					${grouping_select}
-					sum(count()) OVER (ORDER BY ts ASC) AS sessions,
+					sum(count()) OVER (${partition_by}ORDER BY ts ASC) AS sessions,
 					count() AS ts_sessions
 				FROM ${this.database}.sessions FINAL
 				WHERE
@@ -569,22 +866,20 @@ export class ClickHouse implements OLAPDB {
 				ORDER BY ts ASC WITH FILL STEP ${fill_interval}
 					INTERPOLATE (sessions)
 			),
+			EventValues AS (
+				${event_values_query}
+			),
 			Events AS (
 				SELECT
-					DISTINCT toStartOfInterval(created_at, INTERVAL ${interval}) AS ts,
-					${grouping_select}
-					sum(count()) OVER (ORDER BY ts ASC) AS events,
-					count() AS ts_events,
+					toStartOfInterval(ts, INTERVAL ${interval}) AS ts,
+					${params.group_by === 'variation_id' ? 'variation_id,' : params.group_by === 'test_id' ? 'test_id,' : ''}
+					sum(sum(count)) OVER (${partition_by}ORDER BY ts ASC) AS events,
+					sum(count) AS ts_events,
 					${event_calculations}
-				FROM ${this.database}.events
-				WHERE
-					created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
-					AND type = { event_type: String }
-					AND subject_id = { subject_id: String }
-					${segment_filters}
-				${group_by}
+				FROM EventValues
+				${group_by}, count
 				ORDER BY ts ASC WITH FILL STEP ${fill_interval}
-					INTERPOLATE (events, event_value)
+					INTERPOLATE (events, raw_event_value)
 			)
 			SELECT
 				s.ts AS ts,

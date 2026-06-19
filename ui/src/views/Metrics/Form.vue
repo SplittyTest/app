@@ -75,6 +75,23 @@
                                 </div>
                                 <FormError :error="error_message"/>
                             </FieldValidation>
+                            <div class="control-group mt-1">
+                                <div class="inner">
+                                    <label class="control-label">Session Event Strategy:</label>
+                                    <div class="controls">
+                                        <div class="field">
+                                            <Select fluid v-model="metric.session_strategy" :options="session_strategy_options" option-label="label" option-value="value">
+                                                <template #option="{ option }">
+                                                    <div class="option">
+                                                        <div><strong>{{ option.label }}</strong></div>
+                                                        <div class="text-sm text-gray-400">{{ option.description }}</div>
+                                                    </div>
+                                                </template>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </Fieldset>
                         <div class="control-group alt">
                             <div class="inner">
@@ -182,6 +199,7 @@ const default_metric = {
     subject_id: null as string | null,
     event_type: '' as string,
     strategy: 'rate' as 'rate' | 'sum' | 'avg' | 'median',
+    session_strategy: 'all' as string,
     type: 'percent' as 'percent' | 'number' | 'currency',
     default_value: 1 as number,
     sorting_type: 'max' as 'max' | 'min',
@@ -200,6 +218,14 @@ export default {
                 { label: 'Sum', value: 'sum', description: 'The total sum of the values' },
                 { label: 'Average', value: 'avg', description: 'The average value across all entries' },
                 { label: 'Median', value: 'median', description: 'The median value across all entries' }
+            ],
+            session_strategy_options: [
+                { label: 'All Events', value: 'all', description: 'Count all session events and sum the event values' },
+                { label: 'First Event', value: 'unique_first', description: 'Only count one event per session and use the first event value' },
+                { label: 'Last Event', value: 'unique_last', description: 'Only count one event per session and use the last event value' },
+                { label: 'Unique Sum', value: 'unique_sum', description: 'Only count one event per session and sum the event values' },
+                { label: 'Unique Average', value: 'unique_avg', description: 'Only count one event per session and use the average event values' },
+                { label: 'Unique Median', value: 'unique_median', description: 'Only count one event per session and use the median event value' }
             ],
             type_options: [
                 { label: 'Percent', value: 'percent' },

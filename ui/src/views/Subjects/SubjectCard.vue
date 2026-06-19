@@ -4,17 +4,22 @@
             <img src="https://picsum.photos/500/350" alt="foo">
         </template> -->
         <template #title>
-            <div class="flex items-center justify-between">
-                <div class="name">{{  subject.name }}</div>
+            <div class="flex items-start justify-between">
+                <div class="subject-title flex items-center gap-1.5">
+                    <div class="subject-icon">
+                        <Icon :type="subjectIcon(subject.type)" color="white" size="24px"/>
+                    </div>
+                    <div>
+                        <div class="name">{{  subject.name }}</div>
+                        <div class="text-sm text-gray-400">{{ startCase(subject.type) }}</div>
+                    </div>
+                </div>
                 <div class="testing-status">
                     <template v-if="!subject.testing_enabled">
                         <Icon type="Content Paste Off" color="red" size="24px"/>
                     </template>
                 </div>
             </div>
-        </template>
-        <template #subtitle>
-            {{ startCase(subject.type) }}
         </template>
         <template #content>
             <p>{{ subject.description }}</p>
@@ -98,6 +103,19 @@ export default defineComponent({
     },
     methods: {
         startCase,
+        subjectIcon(type: string) {
+            switch (type) {
+                case 'website':
+                    return 'Web';
+                    break;
+                case 'app':
+                    return 'Mobile Friendly';
+                    break;
+                case 'other':
+                    return 'Devices';
+                    break;
+            }
+        },
         toggle(event: MouseEvent) {
             const menu_instance = this.$refs.menu as any;
 			menu_instance.toggle(event);
@@ -110,7 +128,7 @@ export default defineComponent({
         },
 		deleteSubject() {
 			this.$confirm.require({
-				group: 'dialog',
+				group: 'confirmation',
 				header: 'Delete Subject',
 				message: `Are you sure you want to delete the subject named <strong>${this.subject.name}</strong>? This may break any tests associated with it and cannot be undone.`,
 				acceptProps: {
@@ -158,6 +176,16 @@ export default defineComponent({
 		line-height: 40px;
 		padding: 0 0.5em;
 	}
+}
+
+.subject-icon {
+    align-items: center;
+    background-color: var(--color-brand);
+    border-radius: 25px;
+    display: flex;
+    height: 50px;
+    justify-content: center;
+    width: 50px;
 }
 
 :deep(.icon-box) {
