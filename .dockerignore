@@ -1,3 +1,26 @@
-.env
+# Build context is the repository root (see ops/containers/Dockerfile).
+.git
+.github
+.vscode
+.idea
+
+# Dependencies and build output are produced inside the image.
+**/node_modules
+**/dist
+**/coverage
+**/.tmp
+
+# Local secrets and environment-specific config never go into the image.
+**/.env
+**/.env.*
 api/config/local*
 api/config/test*
+
+# Not needed to build the app.
+docs
+ops/charts
+api/tests
+API-Schema.paw
+*.md
+**/*.log
+**/.DS_Store
