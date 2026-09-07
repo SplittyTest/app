@@ -190,7 +190,7 @@
 
 <script lang="ts">
 import { cloneDeep, snakeCase } from 'lodash-es';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 const default_metric = {
     id: null as string | null,
@@ -281,6 +281,9 @@ export default {
                 ],
                 sorting_type: [
                     rules.required('A sorting type is required')
+                ],
+                idle_logging_percentage: [
+                    rules.required('An idle logging percentage is required')
                 ]
             }
         },

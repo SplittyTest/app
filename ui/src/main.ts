@@ -10,7 +10,7 @@ import ToastService from 'primevue/toastservice';
 import ConfirmDelete from '@/components/ConfirmDelete.vue';
 import FormError from '@components/FormError.vue';
 import Icon from '@components/Icon.vue';
-import { FieldValidation } from '@splitty-test/validation';
+import { FieldValidation } from '@splittytest/validation';
 import Aura from '@primeuix/themes/aura';
 import router from './router';
 import { client } from '@lib/API';

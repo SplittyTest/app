@@ -12,7 +12,7 @@
     "@formatjs/intl-numberformat": "^9.3.10",
     "@primeuix/themes": "^2.0.3",
     "@primevue/forms": "^4.5.5",
-    "@splitty-test/validation": "^0.2.11",
+    "@splittytest/validation": "^1.0.0",
     "@tailwindcss/vite": "^4.3.0",
     "@vueuse/core": "^14.3.0",
     "axios": "^1.16.1",

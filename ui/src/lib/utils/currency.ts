@@ -1,5 +1,5 @@
 import '@formatjs/intl-numberformat';
-import '@formatjs/intl-numberformat/locale-data/en';
+import '@formatjs/intl-numberformat/locale-data/en.js';
 import { useSessionStore } from '@/stores/Session';
 
 export function currency(value: number) {

@@ -105,8 +105,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { cloneDeep, defaultsDeep, isNumber, snakeCase, sortBy, uniqueId } from 'lodash-es';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { cloneDeep, defaultsDeep } from 'lodash-es';
+import { useFormValidator } from '@splittytest/validation';
 import Details from './Sections/Details.vue';
 import Sections from './Sections/Sections.vue';
 import Settings from './Sections/Settings.vue';

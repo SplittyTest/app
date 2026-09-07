@@ -236,7 +236,7 @@ import { hash } from 'hash-it';
 import { ulid } from 'ulid';
 import { dateFormat } from '@lib/filters';
 import { useConfirm } from 'primevue/useconfirm';
-import { useFormValidator } from '@splitty-test/validation';
+import { useFormValidator } from '@splittytest/validation';
 import Audiences from './Sections/Audiences.vue';
 import Details from './Sections/Details.vue';
 import Metrics from './Sections/Metrics.vue';

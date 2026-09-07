@@ -62,7 +62,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 
 export default defineComponent({

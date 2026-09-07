@@ -77,7 +77,7 @@
 
 <script lang="ts">
 import { cloneDeep } from 'lodash-es';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 const default_audience = {
     id: null as string | null,

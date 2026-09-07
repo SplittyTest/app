@@ -156,7 +156,7 @@
 <script lang="ts">
 import { cloneDeep } from 'lodash-es';
 import { defineComponent } from 'vue';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 const default_webhook = {
     name: '',
@@ -205,6 +205,9 @@ export default defineComponent({
         },
         validationRules() {
             return {
+                subject_id: [
+                    rules.required('A subject is required')
+                ],
                 name: [
                     rules.required('A name is required')
                 ],

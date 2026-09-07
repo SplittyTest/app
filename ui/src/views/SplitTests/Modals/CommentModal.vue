@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { FieldValidation, rules, useFormValidator } from '@splitty-test/validation';
+import { FieldValidation, rules, useFormValidator } from '@splittytest/validation';
 import { emitter } from '@/lib/utils/eventBus';
 import { cloneDeep } from 'lodash-es';
 

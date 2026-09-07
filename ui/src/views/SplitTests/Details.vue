@@ -585,7 +585,7 @@ export default defineComponent({
 									lineWidth: dataset.borderWidth ?? 2,
 									strokeStyle: dataset.borderColor,
 									text: (dataset.label ?? '').slice(-1),
-								})).sort((a, b) => a.text.localeCompare(b.text)); // Sort legend labels alphabetically
+								})).sort((a: { text: string }, b: { text: string }) => a.text.localeCompare(b.text)); // Sort legend labels alphabetically
 							},
 							padding: 30,
 						}

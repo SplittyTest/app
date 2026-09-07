@@ -41,7 +41,7 @@
                 </div>
             </div>
             <div class="actions flex gap-1">
-                <Button text rounded severity="secondary" :disabled="hasActiveTests(section.id)" v-tooltip.top="'Edit Section'" @click="editSection(section, index)">
+                <Button text rounded severity="secondary" :disabled="hasActiveTests(section.id)" v-tooltip.top="'Edit Section'" @click="editSection(section, index as number)">
                     <template #icon>
                         <Icon type="Edit" color="gray" size="20px"/>
                     </template>

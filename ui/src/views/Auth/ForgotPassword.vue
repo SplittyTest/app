@@ -48,7 +48,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useAPI } from '@lib/API';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 const $API = useAPI();
 
