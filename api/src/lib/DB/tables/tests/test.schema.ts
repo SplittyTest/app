@@ -16,6 +16,8 @@ export const zVariationSchema = z.object({
 	weight: z.number().int().optional(),
 	/** The status of the variation within the test */
 	status: z.enum(['active', 'paused', 'archived']),
+	/** Whether this variation is the control (set by migration 003-add-is-control and the promote route) */
+	is_control: z.boolean().optional(),
 });
 export type Variation = z.infer<typeof zVariationSchema>;
 

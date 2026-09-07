@@ -26,7 +26,7 @@ PassportAuth.deserializeUser(async (user_id: string, callback) => {
 			}
 
 			return callback(null, {
-				id: api_key?.prefix!,
+				id: api_key.prefix!,
 				role: 'api',
 				subject_id: api_key?.subject_id,
 			});

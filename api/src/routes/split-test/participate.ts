@@ -84,7 +84,8 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 		throw err;
 	}
 
-	let { section_id, test_id, variation_id, data, ignore } = params;
+	const { section_id, variation_id, data, ignore } = params;
+	let { test_id } = params;
 	const subject_id = req.subject_id || req.user?.subject_id;
 	let available_tests: string[] = await DB.Dict.lrange(`tests:queue:${subject_id}:${section_id}`, 0, -1);
 

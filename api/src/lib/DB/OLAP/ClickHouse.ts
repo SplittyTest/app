@@ -734,7 +734,7 @@ export class ClickHouse implements OLAPDB {
 		`;
 
 		// Pre-aggregate events based on session_strategy
-		let event_values_group_by = `GROUP BY session_id, data`;
+		let event_values_group_by = 'GROUP BY session_id, data';
 		if (params.group_by === 'variation_id') {
 			event_values_group_by += ', variation_id';
 		} else if (params.group_by === 'test_id') {

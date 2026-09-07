@@ -19,7 +19,7 @@
         "src/types/*"
       ]
     },
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
