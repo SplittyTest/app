@@ -60,3 +60,31 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Name of the Secret holding application secrets.
+*/}}
+{{- define "splittytest.secretName" -}}
+{{- if .Values.secrets.existingSecret }}
+{{- .Values.secrets.existingSecret }}
+{{- else }}
+{{- include "splittytest.fullname" . }}
+{{- end }}
+{{- end }}
+
+{{/*
+Container image reference.
+*/}}
+{{- define "splittytest.image" -}}
+{{- printf "%s:%s" .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) }}
+{{- end }}
+
+{{/*
+Environment shared by the app container and the migration job.
+*/}}
+{{- define "splittytest.envFrom" -}}
+- configMapRef:
+    name: {{ include "splittytest.fullname" . }}
+- secretRef:
+    name: {{ include "splittytest.secretName" . }}
+{{- end }}

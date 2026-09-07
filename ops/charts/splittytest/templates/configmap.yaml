@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "splittytest.fullname" . }}
+  labels:
+    {{- include "splittytest.labels" . | nindent 4 }}
+data:
+  NODE_ENV: {{ .Values.config.nodeEnv | quote }}
+  PORT: "3000"
+  UI_PATH: "/app/ui/dist"
+  APP_URL: {{ .Values.config.appUrl | quote }}
+  STORE_TYPE: {{ .Values.config.store.type | quote }}
+  POSTGRES_HOST: {{ .Values.config.store.postgres.host | quote }}
+  POSTGRES_PORT: {{ .Values.config.store.postgres.port | quote }}
+  POSTGRES_USER: {{ .Values.config.store.postgres.user | quote }}
+  POSTGRES_DATABASE: {{ .Values.config.store.postgres.database | quote }}
+  OLAP_TYPE: {{ .Values.config.olap.type | quote }}
+  CLICKHOUSE_URL: {{ .Values.config.olap.clickhouse.url | quote }}
+  CLICKHOUSE_USERNAME: {{ .Values.config.olap.clickhouse.username | quote }}
+  CLICKHOUSE_DATABASE: {{ .Values.config.olap.clickhouse.database | quote }}
+  DICT_TYPE: "redis"
+  REDIS_HOST: {{ .Values.config.redis.host | quote }}
+  REDIS_PORT: {{ .Values.config.redis.port | quote }}
+  {{- with .Values.config.redis.username }}
+  REDIS_USERNAME: {{ . | quote }}
+  {{- end }}

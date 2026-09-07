@@ -33,3 +33,10 @@
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
+
+2. Database migrations ran as a Helm hook Job ({{ .Values.migrations.hooks }}).
+   Check it with:
+     kubectl --namespace {{ .Release.Namespace }} logs job/{{ include "splittytest.fullname" . }}-migrate
+
+3. First login (unless secrets.initUser was set): admin@splittytest.com / password
+   Change it immediately.
