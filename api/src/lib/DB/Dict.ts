@@ -159,8 +159,24 @@ export class RedisDict implements DictDB {
 
 function createDictDB(): DictDB {
 	switch (config.get('db.dict.type')) {
-		case 'redis':
-			return new RedisDict(config.get('db.dict.redis') as RedisClientOptions);
+		case 'redis': {
+			// Config keeps a flat {host, port, username, password}; node-redis wants host/port under `socket`.
+			const { host, port, username, password } = config.get('db.dict.redis') as {
+				host?: string;
+				port?: number | string;
+				username?: string;
+				password?: string;
+			};
+			const options: RedisClientOptions = {
+				socket: {
+					host: host || 'localhost',
+					port: Number(port) || 6379,
+				},
+			};
+			if (username) options.username = username;
+			if (password) options.password = password;
+			return new RedisDict(options);
+		}
 		default:
 			throw new Error('Unsupported Dictionary type');
 	}

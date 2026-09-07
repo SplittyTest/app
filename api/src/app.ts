@@ -118,6 +118,16 @@ export async function createApp(session_key: string): Promise<express.Express> {
 	app.use(cors(corsOptionsDelegate));
 	app.use('/api', api);
 	app.use('/split-test', experiment);
+	// Liveness/readiness endpoint for containers and Kubernetes probes.
+	// Registered before the UI router so the SPA fallback never swallows it.
+	app.get('/healthz', async (req: Request, res: Response) => {
+		try {
+			await DB.Dict.ping();
+			res.json({ status: 'ok' });
+		} catch (err: any) {
+			res.status(503).json({ status: 'error', error: err?.message });
+		}
+	});
 	app.use('/', root);
 
 	// Error handler

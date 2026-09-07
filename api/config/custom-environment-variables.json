@@ -54,5 +54,11 @@
     },
     "migrator": {
         "type": "MIGRATOR_TYPE"
+    },
+    "app": {
+        "url": "APP_URL"
+    },
+    "api": {
+        "port": "PORT"
     }
 }

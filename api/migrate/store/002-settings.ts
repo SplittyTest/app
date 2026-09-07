@@ -21,7 +21,9 @@ const settings: Setting[] = [
 
 export async function up(db: Kysely<DB>): Promise<void> {
 	const parsed_settings = await asyncMap(settings, async (s: Setting) => {
-		return await zSettingSchema.parseAsync(s);
+		const parsed = await zSettingSchema.parseAsync(s);
+		// The value column is JSON; serialise like DB.Settings does so strings and arrays are valid JSON.
+		return { ...parsed, value: JSON.stringify(parsed.value) };
 	});
 
 	await db.insertInto('settings').values(parsed_settings).execute();

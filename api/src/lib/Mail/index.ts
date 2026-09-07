@@ -8,9 +8,22 @@ import path from 'path';
 import { convert } from 'html-to-text';
 import { compile } from 'handlebars';
 
-// Create a test account or replace with real credentials.
 const transport_config = config.get('email.transport') as mailgunTransport.Options;
-const transporter = nodemailer.createTransport(mailgunTransport(transport_config));
+let transporter: nodemailer.Transporter | null | undefined;
+
+// Build the transport on first use so the API can start without Mailgun credentials.
+function getTransporter(): nodemailer.Transporter | null {
+	if (transporter === undefined) {
+		const auth = transport_config?.auth as { api_key?: string; domain?: string } | undefined;
+		if (auth?.api_key && auth?.domain) {
+			transporter = nodemailer.createTransport(mailgunTransport(transport_config));
+		} else {
+			log.warn('MAILGUN_API_KEY / MAILGUN_DOMAIN are not set; outbound email is disabled');
+			transporter = null;
+		}
+	}
+	return transporter;
+}
 
 export interface MailContact {
 	name?: string;
@@ -126,11 +139,17 @@ async function send(params: SendMailParams) {
 		}
 	}
 
+	const mailer = getTransporter();
+	if (!mailer) {
+		log.warn({ to: mapped_params.to, subject: mapped_params.subject }, 'Email not sent: no mail transport configured');
+		return false;
+	}
+
 	try {
-		await transporter.sendMail(mapped_params);
+		await mailer.sendMail(mapped_params);
 		log.info('Mail sent');
 	} catch (err) {
-		log.warn('Email not sent');
+		log.warn('Email not sent', err);
 	}
 	return true;
 }
