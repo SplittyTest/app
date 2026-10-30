@@ -1,161 +1,253 @@
-# Default values for splittytest.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Default values for the Splitty Test chart.
+#
+# Quick start (everything in-cluster):
+#   helm install splittytest ./ops/charts/splittytest \
+#     --set image.repository=<registry>/splittytest \
+#     --set migrator.image.repository=<registry>/splittytest-migrator
+#
+# Build the two images from the repository root:
+#   docker build -f ops/containers/Dockerfile          -t <registry>/splittytest:<tag> .
+#   docker build -f ops/containers/Dockerfile.migrator -t <registry>/splittytest-migrator:<tag> .
 
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 1
-
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
-image:
-  repository: nginx
-  # This sets the pull policy for images.
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-
-# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-imagePullSecrets: []
-# This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+# -----------------------------------------------------------------------------
+# Application (API + built UI)
+# -----------------------------------------------------------------------------
+
+image:
+  # Built from ops/containers/Dockerfile
+  repository: splittytest/splittytest
+  # Defaults to the chart appVersion
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+replicaCount: 1
+
+app:
+  # Port the Node server listens on inside the container (config api.port)
+  port: 3000
+
+  # Public URL of the app, used in links in emails (config app.url).
+  # Defaults to the first ingress/HTTPRoute host, otherwise http://localhost:3000.
+  url: ""
+
+  # "production" turns on secure-only session cookies and restricts CORS to each
+  # API key's domain whitelist. It requires HTTPS in front of the app (e.g. an
+  # Ingress with TLS). Set to "" to test over plain HTTP (e.g. kubectl port-forward).
+  nodeEnv: production
+
+  # Lifetime of sessions created with an API key, in milliseconds (default 1 hour)
+  apiSessionMaxAge: ""
+
+  uploads:
+    mimeTypes:
+      - image/jpeg
+      - image/png
+      - image/gif
+    # Uploaded images are written to /app/ui/dist/uploads and served at /uploads.
+    # Without persistence they are lost when the pod restarts.
+    persistence:
+      enabled: true
+      # Use ReadWriteMany if you run more than one replica (or enable autoscaling)
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      storageClass: ""
+      # Use an existing PVC instead of creating one
+      existingClaim: ""
+
+  # Extra node-config settings merged into NODE_CONFIG (see api/config/default.js), e.g.
+  #   nodeConfig:
+  #     log: { level: info }
+  #     email: { from: "Acme Tests <no-reply@acme.com>" }
+  nodeConfig: {}
+
+  # Extra environment variables for the app and migration containers
+  extraEnv: []
+
+# Secrets. Leave a value empty to have one generated on install (and kept on upgrade).
+secrets:
+  # Use an existing Secret instead of creating one. It must contain the keys:
+  #   AUTH_SECRET, SESSION_SECRET, POSTGRES_PASSWORD, CLICKHOUSE_PASSWORD,
+  #   MAILGUN_API_KEY, MAILGUN_DOMAIN (use any placeholder if you don't send email)
+  # and optionally REDIS_PASSWORD.
+  existingSecret: ""
+  authSecret: ""
+  sessionSecret: ""
+
+mailgun:
+  apiKey: ""
+  domain: ""
+
+# -----------------------------------------------------------------------------
+# Migrations
+# -----------------------------------------------------------------------------
+
+migrator:
+  # Runs the Postgres and ClickHouse migrations as a Helm hook after every
+  # install and upgrade. Migrations that already ran are skipped.
+  enabled: true
+  image:
+    # Built from ops/containers/Dockerfile.migrator
+    repository: splittytest/splittytest-migrator
+    tag: ""
+    pullPolicy: IfNotPresent
+  # JSON overrides for the first admin user, used only on an empty database.
+  # Default login is admin@splittytest.com / password.
+  #   initUser: '{"email":"me@example.com","password":"a-strong-password"}'
+  initUser: ""
+  backoffLimit: 3
+  activeDeadlineSeconds: 900
+  resources: {}
+
+# -----------------------------------------------------------------------------
+# Postgres (store)
+# -----------------------------------------------------------------------------
+
+postgresql:
+  # true: run a single-node Postgres in the cluster.
+  # false: connect to an external Postgres at `host` (put its password in the
+  #        POSTGRES_PASSWORD key, via secrets.existingSecret or `password` below).
+  enabled: true
+  host: ""
+  port: 5432
+  username: postgres
+  database: splittytest
+  # Leave empty to generate one
+  password: ""
+  image:
+    repository: postgres
+    tag: "17-alpine"
+    pullPolicy: IfNotPresent
+  persistence:
+    size: 8Gi
+    storageClass: ""
+  resources: {}
+
+# -----------------------------------------------------------------------------
+# Redis (sessions, cache, buffers). Needs the RedisJSON module (Redis Stack,
+# Redis 8+, or Valkey with valkey-json).
+# -----------------------------------------------------------------------------
+
+redis:
+  enabled: true
+  host: ""
+  port: 6379
+  username: ""
+  # Optional. When set, the in-cluster Redis requires it too.
+  password: ""
+  image:
+    repository: redis/redis-stack-server
+    tag: "7.4.0-v8"
+    pullPolicy: IfNotPresent
+  persistence:
+    size: 2Gi
+    storageClass: ""
+  resources: {}
+
+# -----------------------------------------------------------------------------
+# ClickHouse (metrics). Needs 25.3+ for the JSON column type.
+# -----------------------------------------------------------------------------
+
+clickhouse:
+  enabled: true
+  # For an external ClickHouse, the HTTP URL, e.g. https://my-clickhouse:8443
+  url: ""
+  username: default
+  database: splittytest
+  # Leave empty to generate one
+  password: ""
+  image:
+    repository: clickhouse/clickhouse-server
+    tag: "25.8"
+    pullPolicy: IfNotPresent
+  persistence:
+    size: 20Gi
+    storageClass: ""
+  resources: {}
+
+# -----------------------------------------------------------------------------
+# Kubernetes plumbing
+# -----------------------------------------------------------------------------
+
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
+  automount: false
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 80
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt
   hosts:
-    - host: chart-example.local
+    - host: splittytest.example.com
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls: []
-  #  - secretName: chart-example-tls
+  #  - secretName: splittytest-tls
   #    hosts:
-  #      - chart-example.local
+  #      - splittytest.example.com
 
-# -- Expose the service via gateway-api HTTPRoute
-# Requires Gateway API resources and suitable controller installed within the cluster
-# (see: https://gateway-api.sigs.k8s.io/guides/)
+# Gateway API alternative to Ingress
 httpRoute:
-  # HTTPRoute enabled.
   enabled: false
-  # HTTPRoute annotations.
   annotations: {}
-  # Which Gateways this Route is attached to.
   parentRefs:
-  - name: gateway
-    sectionName: http
-    # namespace: default
-  # Hostnames matching HTTP header.
+    - name: gateway
+      sectionName: http
   hostnames:
-  - chart-example.local
-  # List of rules and filters applied.
+    - splittytest.example.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /headers
-  #   filters:
-  #   - type: RequestHeaderModifier
-  #     requestHeaderModifier:
-  #       set:
-  #       - name: My-Overwrite-Header
-  #         value: this-is-the-only-value
-  #       remove:
-  #       - User-Agent
-  # - matches:
-  #   - path:
-  #       type: PathPrefix
-  #       value: /echo
-  #     headers:
-  #     - name: version
-  #       value: v2
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
 
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
   # requests:
   #   cpu: 100m
-  #   memory: 128Mi
+  #   memory: 256Mi
+  # limits:
+  #   memory: 512Mi
 
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
     path: /
     port: http
+  initialDelaySeconds: 10
+  periodSeconds: 20
 readinessProbe:
   httpGet:
     path: /
     port: http
+  periodSeconds: 10
 
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-# Additional volumes on the output Deployment definition.
+# Extra volumes / mounts for the app container
 volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
 volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}

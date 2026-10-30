@@ -1,0 +1,18 @@
+{{- $p := .Values.app.uploads.persistence }}
+{{- if and $p.enabled (not $p.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "splittytest.fullname" . }}-uploads
+  labels:
+    {{- include "splittytest.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - {{ $p.accessMode }}
+  {{- include "splittytest.storageClass" $p | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ $p.size }}
+{{- end }}

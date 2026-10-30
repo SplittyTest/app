@@ -1,0 +1,69 @@
+{{- if .Values.migrator.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "splittytest.fullname" . }}-migrate
+  labels:
+    {{- include "splittytest.componentLabels" (list . "migrate") | nindent 4 }}
+  annotations:
+    # Runs after install/upgrade so the bundled databases and the Secret exist.
+    # Migrations that already ran are skipped, so re-running is safe.
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.migrator.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.migrator.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        # Component labels (not the app's), so the app Service never selects this pod
+        {{- include "splittytest.componentSelectorLabels" (list . "migrate") | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "splittytest.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-databases
+          image: busybox:1.37
+          {{- $ch := urlParse (include "splittytest.clickhouse.url" .) }}
+          {{- $chHost := $ch.hostname }}
+          {{- $chPort := ternary (regexFind "[0-9]+$" $ch.host) (ternary "443" "80" (eq $ch.scheme "https")) (regexMatch ":[0-9]+$" $ch.host) }}
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z -w 2 {{ include "splittytest.postgresql.host" . }} {{ .Values.postgresql.port }}; do echo "waiting for postgres"; sleep 2; done
+              until nc -z -w 2 {{ $chHost }} {{ $chPort }}; do echo "waiting for clickhouse"; sleep 2; done
+      containers:
+        - name: migrate
+          image: {{ include "splittytest.migratorImage" . | quote }}
+          imagePullPolicy: {{ .Values.migrator.image.pullPolicy }}
+          # The image's entrypoint is `npm run`, so pass script names.
+          command: ["sh", "-c", "npm run migrate:postgres && npm run migrate:clickhouse"]
+          env:
+            {{- with .Values.migrator.initUser }}
+            - name: INIT_USER
+              value: {{ . | quote }}
+            {{- end }}
+            {{- include "splittytest.env" . | nindent 12 }}
+          {{- with .Values.migrator.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

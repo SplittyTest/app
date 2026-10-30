@@ -1,0 +1,155 @@
+# Splitty Test — full local stack
+#
+#   cp api/.env .env      # or create .env from the keys listed below
+#   docker compose up --build
+#
+# App:      http://localhost:3000   (API + built UI)
+# Login:    admin@splittytest.com / password   (override with INIT_USER before the first run)
+#
+# Values are read from a .env file next to this compose file. Every key has a
+# local-only default so `docker compose up` works without one.
+
+name: splittytest
+
+x-api-env: &api-env
+  AUTH_SECRET: ${AUTH_SECRET:-change-me-auth-secret}
+  SESSION_SECRET: ${SESSION_SECRET:-change-me-session-secret}
+
+  # Store (Postgres)
+  STORE_TYPE: postgres
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  POSTGRES_DATABASE: splittytest
+
+  # OLAP (ClickHouse)
+  OLAP_TYPE: clickhouse
+  CLICKHOUSE_URL: http://clickhouse:8123
+  CLICKHOUSE_USERNAME: default
+  CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-default}
+  CLICKHOUSE_DATABASE: splittytest
+
+  # Mail (placeholders are fine if you don't need email)
+  MAILGUN_API_KEY: ${MAILGUN_API_KEY:-unset}
+  MAILGUN_DOMAIN: ${MAILGUN_DOMAIN:-unset}
+
+  # node-config overrides that can't be set through custom-environment-variables.json:
+  #  - Redis: node-redis ignores top-level host/port (REDIS_HOST/REDIS_PORT), it needs `socket`
+  #  - Uploads: api/public is a symlink that doesn't resolve inside the image
+  #  - upload.mime_types is read by routes/utils but not defined in config/default.js
+  #  - app.url is used in password-reset emails
+  NODE_CONFIG: >-
+    {"app":{"url":"${APP_URL:-http://localhost:3000}"},
+     "db":{"dict":{"redis":{"socket":{"host":"redis","port":6379}}}},
+     "upload":{"local":{"folder":"/app/ui/dist/uploads"},
+               "mime_types":["image/jpeg","image/png","image/gif"]}}
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ops/containers/Dockerfile
+    image: splittytest/app:local
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      <<: *api-env
+      # Leave NODE_ENV unset for local http use: "production" turns on secure-only
+      # session cookies (login breaks without HTTPS) and strict CORS.
+    volumes:
+      - uploads:/app/ui/dist/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate-store:
+        condition: service_completed_successfully
+      migrate-metrics:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  migrate-store:
+    build:
+      context: .
+      dockerfile: ops/containers/Dockerfile.migrator
+    image: splittytest/migrator:local
+    command: ["migrate:postgres"]
+    environment:
+      <<: *api-env
+      # JSON overrides for the first admin user, e.g.
+      # INIT_USER='{"email":"me@example.com","password":"s3cret"}'
+      INIT_USER: ${INIT_USER:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  migrate-metrics:
+    image: splittytest/migrator:local
+    pull_policy: never
+    command: ["migrate:clickhouse"]
+    environment:
+      <<: *api-env
+    depends_on:
+      migrate-store:
+        condition: service_completed_successfully # ensures the migrator image is built first
+      clickhouse:
+        condition: service_healthy
+    restart: "no"
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: splittytest
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # ports: ["5432:5432"]   # uncomment to reach it from `npm run dev`
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d splittytest"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    # redis-stack includes RedisJSON, which the API uses (jsonGet/jsonSet)
+    image: redis/redis-stack-server:7.4.0-v8
+    volumes:
+      - redis-data:/data
+    # ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  clickhouse:
+    # 25.3+ is needed for the GA `JSON` column type used in the metrics migration
+    image: clickhouse/clickhouse-server:25.8
+    environment:
+      CLICKHOUSE_DB: splittytest
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-default}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    # ports: ["8123:8123", "9000:9000"]
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --password \"$$CLICKHOUSE_PASSWORD\" -q 'SELECT 1'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  clickhouse-data:
+  uploads:

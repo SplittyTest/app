@@ -1,3 +1,4 @@
+{{- $uploads := .Values.app.uploads.persistence }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,15 +9,23 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  {{- if and $uploads.enabled (eq $uploads.accessMode "ReadWriteOnce") }}
+  # A ReadWriteOnce uploads volume can only be attached to one node at a time,
+  # so the old pod is stopped before the new one starts.
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "splittytest.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ include "splittytest.nodeConfig" . | sha256sum }}
+        checksum/secret: {{ toJson (list .Values.secrets .Values.mailgun .Values.postgresql.password .Values.clickhouse.password .Values.redis.password) | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "splittytest.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
@@ -32,17 +41,35 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        # The API connects to Redis on startup and exits if it can't.
+        - name: wait-for-redis
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - until nc -z -w 2 {{ include "splittytest.redis.host" . }} {{ .Values.redis.port }}; do echo "waiting for redis"; sleep 2; done
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "splittytest.image" . | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- with .Values.app.nodeEnv }}
+            - name: NODE_ENV
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.app.apiSessionMaxAge }}
+            - name: API_SESSION_MAX_AGE
+              value: {{ . | quote }}
+            {{- end }}
+            {{- include "splittytest.env" . | nindent 12 }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.app.port }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
           livenessProbe:
@@ -56,14 +83,23 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
+            - name: uploads
+              mountPath: /app/ui/dist/uploads
+            {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
+            {{- end }}
       volumes:
+        - name: uploads
+          {{- if $uploads.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ $uploads.existingClaim | default (printf "%s-uploads" (include "splittytest.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
