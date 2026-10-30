@@ -1,6 +1,6 @@
 <template>
 	<div class="page">
-		<div class="flex items-center justify-between mb-[2em]">
+		<div class="flex flex-wrap items-center justify-between gap-2 mb-[2em]">
 			<hgroup class="flex items-center gap-2">
 				<div class="page-icon bg-brand">
 					<Icon type="Group" color="white" size="28px"/>

@@ -55,6 +55,10 @@ a.no-underline:hover {
 .p-datatable-tbody > tr > td {
     font-size: 0.875em;
 }
+// Wide tables scroll sideways inside their card instead of widening the page
+.p-datatable-table-container {
+    overflow-x: auto;
+}
 .p-datatable-header-cell.text-center div {
     justify-content: center;
 }
@@ -76,6 +80,22 @@ a.no-underline:hover {
 }
 .p-dialog-close-button:focus-visible {
     outline: none;
+}
+// Keep a small margin around dialogs on narrow screens; long content scrolls inside the dialog
+.p-dialog {
+    max-width: calc(100vw - 1.5rem);
+}
+@media (max-width: 639px) {
+    .p-dialog-header,
+    .p-dialog-content,
+    .p-dialog-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .p-dialog-footer {
+        flex-wrap: wrap;
+    }
 }
 
 // Datepicker

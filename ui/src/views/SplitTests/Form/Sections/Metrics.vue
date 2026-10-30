@@ -77,7 +77,7 @@
             </Button>
         </Fieldset>
     </div>
-    <Dialog v-model:visible="show_modal" modal class="w-full max-w-76 bordered">
+    <Dialog v-model:visible="show_modal" modal class="w-full max-w-76! bordered">
         <template #header>
             <div class="h-flex">
                 <Icon type="Analytics" size="24px"/>
@@ -109,10 +109,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { rules } from '@splitty-test/validation';
 import { title } from '@lib/filters';
+import { rules } from '@splitty-test/validation';
 import { sortBy } from 'lodash-es';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name : 'SplitTestFormMetrics',
@@ -234,8 +234,8 @@ export default defineComponent({
     box-shadow: var(--box-shadow);
     cursor: pointer;
     display: grid;
-    grid-template-columns: 2fr 1fr auto;
     gap: 2em;
+    grid-template-columns: 2fr 1fr auto;
     margin-top: 0.5em;
     padding: 10px 20px;
     transition: background-color 0.2s ease;

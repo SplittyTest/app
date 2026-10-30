@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" dismissable-mask modal style="min-width: 960px;">
+    <Dialog v-model:visible="show_modal" dismissable-mask modal class="w-full max-w-96!">
         <template #header>
             <div class="flex items-center gap-2">
                 <div class="icon-box">
@@ -16,9 +16,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import JsonEditor from '@components/JsonEditor.vue';
 import { emitter } from '@/lib/utils/eventBus';
+import JsonEditor from '@components/JsonEditor.vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name : 'VariationDataModal',

@@ -1,7 +1,7 @@
 <template>
     <div class="test-form-section strategy">
         <p>Select a testing strategy to use for this test...</p>
-        <div class="strategy-select grid grid-cols-2 gap-1.5">
+        <div class="strategy-select grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             <div v-for="option in strategy_options" :key="option.value" :class="['strategy-option', {selected: test.strategy === option.value}]">
                 <div :for="`strategy-${option.value}`" @click="selectStrategy(option.value)">
                     <div class="flex-row">

@@ -28,7 +28,7 @@
                 </div>
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             <!-- Project -->
             <div class="control-group">

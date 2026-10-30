@@ -22,6 +22,7 @@ body {
     gap: 1rem;
     
     &.split {
+        flex-wrap: wrap;
         justify-content: space-between;
     }
 }
@@ -151,7 +152,12 @@ a {
     margin-bottom: 1.5em;
 }
 
+.rollup-metrics {
+    flex-wrap: wrap;
+}
+
 .metric-card {
+    min-width: 0;
     align-items: center;
     background-color: var(--color-white);
     border-radius: var(--border-radius);
@@ -240,3 +246,52 @@ a {
 @import 'forms';
 @import 'transitions';
 @import 'overrides';
+
+// ------------------------------------------------------------
+// Smaller screens
+
+@media (max-width: 1023px) {
+    .metric-card {
+        flex: 1 1 220px;
+        padding: 1em 1.25em;
+
+        .label {
+            font-size: 1rem;
+        }
+
+        .value {
+            font-size: 1.5rem;
+        }
+
+        .icon-wrapper {
+            height: 48px;
+            width: 48px;
+        }
+    }
+}
+
+@media (max-width: 639px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: var(--text-xl);
+    }
+
+    .page-icon {
+        flex: 0 0 auto;
+        height: 40px;
+        width: 40px;
+    }
+
+    // Field rows stack instead of squeezing side by side
+    .control-group .controls {
+        flex-wrap: wrap;
+
+        > .field:not(.fit) {
+            flex-basis: 200px;
+        }
+    }
+}
+

@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" modal class="bordered w-full max-w-60">
+    <Dialog v-model:visible="show_modal" modal class="bordered w-full max-w-60!">
         <template #header>
             <div class="flex-row">
                 <Icon type="Perm Identity" size="20px"/>
@@ -132,9 +132,9 @@
 </template>
 
 <script lang="ts">
+import { rules, useFormValidator } from '@splitty-test/validation';
 import { cloneDeep, omit } from 'lodash-es';
 import { defineComponent } from 'vue';
-import { useFormValidator, rules } from '@splitty-test/validation';
 
 const default_user = {
     id: null,

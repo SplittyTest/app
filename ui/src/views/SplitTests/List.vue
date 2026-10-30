@@ -230,14 +230,14 @@
 			<!-- Completed Tests -->
 			<Card class="tests-card">
 				<template #header>
-					<div class="flex items-center justify-between">
+					<div class="flex flex-wrap items-center justify-between gap-2">
 						<div class="flex flex-initial justify-start gap-4">
 							<div class="flex-row">
 								<Icon type="Check Circle" color="brand" size="32px"/>
 								<h2>Completed Tests</h2>
 							</div>
 						</div>
-						<div class="filters flex-initial flex-row justify-end gap-2!">
+						<div class="filters flex-initial flex-row flex-wrap justify-end gap-2!">
 							<div class="control-group flex-auto! mb-0!">
 								<div class="inner">
 									<div class="controls items-center gap-1!">
@@ -790,6 +790,7 @@ export default defineComponent({
 .page-filters {
 	align-items: end;
 	display: flex;
+	flex-wrap: wrap;
 	gap: 1em;
 	margin-bottom: 1em;
 
@@ -847,9 +848,48 @@ export default defineComponent({
 		margin-bottom: 0;
 	}
 
-	@media (max-width: 768px) {
+	// Below 1280px the seven columns get cramped, so the row wraps: status and name on the
+	// first line, details below, then the action buttons
+	@media (max-width: 1279px) {
 		display: flex;
-		flex-direction: column;
+		flex-wrap: wrap;
+		gap: 1em 2em;
+
+		.info {
+			flex: 1 1 calc(100% - 50px - 2em);
+			min-width: 0;
+		}
+
+		.options,
+		.project,
+		.metric,
+		.participations {
+			flex: 1 1 120px;
+		}
+
+		.tools {
+			flex: 1 1 100%;
+		}
+	}
+
+	@media (max-width: 639px) {
+		padding: 1em;
+
+		.tools > div {
+			justify-content: flex-start;
+		}
+	}
+}
+
+@media (max-width: 639px) {
+	.page-filters .control-group {
+		flex: 1 1 100%;
+		width: 100%;
+	}
+
+	.status-icon {
+		height: 40px;
+		width: 40px;
 	}
 }
 

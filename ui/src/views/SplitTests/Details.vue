@@ -1,7 +1,7 @@
 <template>
 	<div class="page">
-		<div class="flex items-center justify-between mb-3">
-			<div class="left flex items-center gap-2">
+		<div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+			<div class="left flex items-center gap-2 min-w-0">
 				<div class="back-button" tabindex="-1" @click="backToTests">
 					<Icon type="arrow-back" color="white" size="24px"/>
 				</div>
@@ -28,7 +28,7 @@
 			<div class="description text-white">{{ test?.description }}</div>
 			<Card :class="['mt-2', test.outcome]">
 				<template #content>
-					<div class="flex items-center justify-between gap-1">
+					<div class="flex flex-wrap items-center justify-between gap-1">
 						<div v-if="test.status === 'complete'" class="status flex items-center gap-2 text-sm">
 							<template v-if="test.outcome === 'win'">
 								<div class="icon-circle bg-green-700!">
@@ -65,7 +65,7 @@
 							<Icon :type="currentStatus.icon" :color="currentStatus.icon_color" size="36px"/>
 							<span><strong>{{ currentStatus.status }}</strong> - {{ currentStatus.verb }} {{ dayjs(currentStatus.date).format('ddd, MMM D, YYYY [at] h:mm:ssA') }}</span>
 						</div>
-						<div v-if="$sessionStore.minRole('tester')" class="settings flex gap-1">
+						<div v-if="$sessionStore.minRole('tester')" class="settings flex flex-wrap gap-1">
 							<Button outlined v-if="['queued', 'paused'].includes(test.status)" v-tooltip.top="'Start Test'" @click="startTest">
 								<template #icon>
 									<Icon type="Play Arrow" color="brand" size="22px"/>
@@ -104,7 +104,7 @@
 			<Card class="mt-2">
 				<template #header>
 					<div class="p-2 border-b border-gray-200">
-						<div class="flex items-center justify-between">
+						<div class="flex flex-wrap items-center justify-between gap-2">
 							<div class="flex-row">
 								<div class="icon-wrapper">
 									<Icon type="analytics" size="24px" color="purple"/>
@@ -114,7 +114,7 @@
 								</div>
 							</div>
 							
-							<div class="flex-row">
+							<div class="flex-row flex-wrap">
 								<div class="segment-label">Data View:</div>
 								<SelectButton v-model="data_view" :allow-empty="false" :options="data_view_options" option-label="label" option-value="value" />
 								<Button outlined v-if="data_view === 'series'" v-tooltip.top="'Reset Zoom'" @click="resetSeriesChartZoom()">
@@ -145,7 +145,7 @@
 				</template>
 				<template #footer>
 					<div v-if="test.data_segments?.length > 0" class="segmentation">
-						<div class="inline-flex-row">
+						<div class="inline-flex-row flex-wrap">
 							<div>Data Segment:</div>
 							<div v-for="(segment, index) in (test.data_segments as string[])" :key="index" class="control-group mb-0!">
 								<div class="inner">
@@ -167,7 +167,7 @@
 			</Card>
 			<Card class="mt-2">
 				<template #header>
-					<div class="flex items-center justify-between p-2 pb-0">
+					<div class="flex flex-wrap items-center justify-between gap-1 p-2 pb-0">
 						<div class="flex-row">
 							<Icon type="list-alt" size="24px" color="purple"/><h2>Variation Details</h2>
 						</div>
@@ -249,8 +249,8 @@
 					</div>
 				</template>
 			</Card>
-			<div class="flex gap-2 mt-2">
-				<div class="self-stretch" style="flex: 2 0;">
+			<div class="flex flex-col lg:flex-row gap-2 mt-2">
+				<div class="self-stretch min-w-0" style="flex: 2 0;">
 					<Card class="comments">
 						<template #header>
 							<div class="flex-row p-2 pb-0">
@@ -299,7 +299,7 @@
 						</template>
 					</Card>
 				</div>
-				<div class="flex-1">
+				<div class="flex-1 min-w-0">
 					<Card class="p-2">
 						<template #header>
 							<div class="flex-row">
@@ -1193,6 +1193,13 @@ h2 {
 	grid-template-columns: 200px 1fr;
 	padding: 2em;
 
+	// Author above the comment on phones
+	@media (max-width: 639px) {
+		gap: 0.75em;
+		grid-template-columns: 1fr;
+		padding: 1em;
+	}
+
 	.comment-body {
 		position: relative;
 
@@ -1208,6 +1215,12 @@ h2 {
 		background-color: var(--color-gray-50);
 		
 		.tools {
+			display: block;
+		}
+	}
+
+	@media (hover: none) {
+		.comment-body .tools {
 			display: block;
 		}
 	}

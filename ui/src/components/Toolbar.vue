@@ -1,13 +1,23 @@
 <template>
     <div id="toolbar" class="flex items-center justify-between">
         <div class="left flex flex-[1_0] items-center justify-start gap-2">
+            <!-- Menu button replaces the full navigation below 1024px -->
+            <button type="button" class="menu-button toolbar-button" aria-label="Open menu" @click="show_menu = true">
+                <Icon type="Menu" size="28px"/>
+            </button>
             <div class="branding">
                 <img src="/images/splitty-test-logo.svg?876876" alt="Splitty Test">
             </div>
         </div>
-        <div class="center flex flex-[0_0_auto] items-center justify-center">
+        <div class="center hidden lg:flex flex-[0_0_auto] items-center justify-center">
             <Navigation/>
         </div>
+        <Drawer v-model:visible="show_menu" position="left" class="mobile-menu" :block-scroll="true">
+            <template #header>
+                <img class="mobile-menu-logo" src="/images/splitty-test-logo.svg?876876" alt="Splitty Test">
+            </template>
+            <Navigation vertical @navigate="show_menu = false"/>
+        </Drawer>
         <div class="right flex flex-[1_0] items-center justify-end">
             <div class="tools flex items-center gap-[10px]">
                 <div class="documentation" v-tooltip.left="'Documentation'">
@@ -69,12 +79,37 @@ export default defineComponent({
         Navigation,
         UserFormModal,
     },
+    data() {
+        return {
+            show_menu: false,
+            wide_screen_query: null as MediaQueryList | null,
+        };
+    },
+    mounted() {
+        // The slide-out menu only exists below 1024px; close it if the window is widened past that
+        this.wide_screen_query = window.matchMedia('(min-width: 1024px)');
+        this.wide_screen_query.addEventListener('change', this.closeMenuOnWideScreen);
+    },
+    beforeUnmount() {
+        this.wide_screen_query?.removeEventListener('change', this.closeMenuOnWideScreen);
+    },
+    watch: {
+        // Close the slide-out menu whenever the page changes
+        '$route.fullPath'() {
+            this.show_menu = false;
+        },
+    },
     computed: {
         alertCount() {
             return this.$sessionStore.alertCount;
         },
     },
     methods: {
+        closeMenuOnWideScreen(event: MediaQueryListEvent) {
+            if (event.matches) {
+                this.show_menu = false;
+            }
+        },
         toggleAccountMenu(event: MouseEvent) {
             const account_menu_instance = this.$refs.account_menu as InstanceType<typeof Popover>;
             account_menu_instance.toggle(event);
@@ -111,6 +146,36 @@ export default defineComponent({
 
 .branding img {
     height: 60px;
+}
+
+.menu-button {
+    background: none;
+    border: 0;
+    margin-left: -8px;
+}
+
+// The full navigation is shown from 1024px up. Scoped under #toolbar so this outranks the
+// `.toolbar-button { display: flex }` rule below, which has the same specificity otherwise.
+@media (min-width: 1024px) {
+    #toolbar .menu-button {
+        display: none;
+    }
+}
+
+@media (max-width: 1023px) {
+    #toolbar {
+        height: auto;
+        min-height: 76px;
+        padding: 12px 1.25em;
+    }
+
+    .branding img {
+        height: 44px;
+    }
+}
+
+.mobile-menu-logo {
+    height: 40px;
 }
 
 :deep(.p-overlaybadge) {

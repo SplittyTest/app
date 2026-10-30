@@ -1,5 +1,5 @@
 <template>
-    <Card class="w-sm overflow-hidden hover:outline-3 outline-brand-200">
+    <Card class="w-full sm:w-sm overflow-hidden hover:outline-3 outline-brand-200">
         <!-- <template #header>
             <img src="https://picsum.photos/500/350" alt="foo">
         </template> -->

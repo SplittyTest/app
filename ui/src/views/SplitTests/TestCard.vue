@@ -1,5 +1,5 @@
 <template>
-    <Card class="w-sm overflow-hidden hover:outline-3 outline-brand-200">
+    <Card class="w-full sm:w-sm overflow-hidden hover:outline-3 outline-brand-200">
         <template #title>
             <div class="leading-2.5">
                 <strong>{{test.name}}</strong>

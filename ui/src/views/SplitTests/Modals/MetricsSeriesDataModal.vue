@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" dismissable-mask modal class="w-full max-w-150 bordered">
+    <Dialog v-model:visible="show_modal" dismissable-mask modal class="w-full max-w-150! bordered">
         <template #header>
 			<div class="flex-row">
 				<Icon type="Analytics" color="purple" size="24px"/>

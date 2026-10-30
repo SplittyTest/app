@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" modal class="w-full max-w-[600px]">
+    <Dialog v-model:visible="show_modal" modal class="w-full max-w-150!">
         <template #header>
             <div class="flex items-center gap-2">
                 <div>
@@ -41,9 +41,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
 import { useEventBus } from '@lib/utils/eventBus';
 import { FieldValidation, rules, useFormValidator } from '@splitty-test/validation';
+import { defineComponent } from 'vue';
 
 const emitter = useEventBus();
 

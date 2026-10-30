@@ -46,7 +46,7 @@
             </div>
         </div>
     </div>
-    <Dialog v-model:visible="show_modal" :close-on-escape="false" modal class="w-full max-w-60 bordered">
+    <Dialog v-model:visible="show_modal" :close-on-escape="false" modal class="w-full max-w-60! bordered">
         <template #closebutton>
             <Button text rounded v-tooltip.top="'Close'" @click="closeModal">
                 <template #icon>
@@ -132,10 +132,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
 import { title } from '@lib/filters';
-import { cloneDeep, endsWith, sortBy } from 'lodash-es';
 import { hash } from 'hash-it';
+import { cloneDeep, endsWith, sortBy } from 'lodash-es';
+import { defineComponent } from 'vue';
 
 const default_variation = {
     id: null as string | null,
@@ -302,8 +302,8 @@ export default defineComponent({
     box-shadow: var(--box-shadow);
     cursor: pointer;
     display: grid;
-    grid-template-columns: 4fr 1fr 1fr;
     gap: 1em;
+    grid-template-columns: 4fr 1fr 1fr;
     margin-top: 0.5em;
     padding: 10px 20px;
     transition: background-color 0.2s ease;

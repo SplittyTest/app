@@ -1,6 +1,17 @@
 <template>
-    <nav id="navigation">
-        <MenuBar :model="filteredNav">
+    <!-- Vertical list, used in the slide-out menu on smaller screens -->
+    <nav v-if="vertical" class="navigation-vertical" aria-label="Main">
+        <ul>
+            <li v-for="item in filteredNav" :key="item.route">
+                <router-link :to="item.route" class="vertical-item" @click="$emit('navigate')">
+                    <Icon :type="item.icon" color="brand" size="26px"/>
+                    <span>{{ item.label }}</span>
+                </router-link>
+            </li>
+        </ul>
+    </nav>
+    <nav v-else id="navigation" aria-label="Main">
+        <MenuBar :model="filteredNav" breakpoint="0px">
             <template #item="{ item }">
                 <router-link :to="item.route">
                     <div class="nav-item">
@@ -22,6 +33,13 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'Navigation',
+    props: {
+        vertical: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    emits: ['navigate'],
     data() {
         return {
             nav: [
@@ -80,6 +98,42 @@ export default defineComponent({
     
     a:hover {
         text-decoration: none;
+    }
+}
+
+// Wide screens with room to spare get tighter items so everything fits on one line
+@media (max-width: 1279px) {
+    .nav-item {
+        padding: 10px 12px;
+    }
+}
+
+.navigation-vertical {
+    ul {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .vertical-item {
+        align-items: center;
+        border-radius: var(--border-radius);
+        color: var(--color-gray-600);
+        display: flex;
+        font-weight: 500;
+        gap: 14px;
+        padding: 12px 14px;
+
+        &:hover {
+            background-color: var(--color-gray-100);
+            text-decoration: none;
+        }
+
+        &.router-link-active {
+            background-color: var(--color-brand-highlight);
+            color: var(--color-gray-900);
+            font-weight: 600;
+        }
     }
 }
 </style>

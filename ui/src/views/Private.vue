@@ -80,6 +80,24 @@ export default defineComponent({
     flex-direction: column;
     margin: 0 auto;
     max-width: 1600px;
+    min-width: 0;
     padding: 2em;
+    width: 100%;
+}
+
+@media (max-width: 1023px) {
+    #main {
+        padding: 1.5em;
+    }
+
+    #content {
+        padding: 0;
+    }
+}
+
+@media (max-width: 639px) {
+    #main {
+        padding: 1em 0.75em;
+    }
 }
 </style>

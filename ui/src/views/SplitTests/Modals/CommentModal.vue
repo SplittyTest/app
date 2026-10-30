@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" modal style="min-width: 800px;">
+    <Dialog v-model:visible="show_modal" modal class="w-full max-w-80!">
         <template #header>
             <div class="flex items-center gap-2">
                 <Icon type="Comment" color="purple" size="24px"/>
@@ -28,10 +28,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { FieldValidation, rules, useFormValidator } from '@splitty-test/validation';
 import { emitter } from '@/lib/utils/eventBus';
+import { FieldValidation, rules, useFormValidator } from '@splitty-test/validation';
 import { cloneDeep } from 'lodash-es';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name : 'CommentModal',

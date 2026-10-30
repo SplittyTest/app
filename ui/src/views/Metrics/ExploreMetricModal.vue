@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" modal class="bordered w-full max-w-160">
+    <Dialog v-model:visible="show_modal" modal class="bordered w-full max-w-150!">
         <template #header>
             <div class="flex-row">
                 <Icon type="Insights" color="brand" size="24px"/>
@@ -232,14 +232,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import dayjs from '@lib/dayjs';
 import currency from '@/lib/utils/currency';
 import num from '@/lib/utils/num';
 import percentage from '@/lib/utils/percentage';
-import { every, groupBy, isEqual, uniq } from 'lodash-es';
+import dayjs from '@lib/dayjs';
 import { hash } from 'hash-it';
+import { every, groupBy, isEqual, uniq } from 'lodash-es';
 import type Chart from 'primevue/chart';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name : 'ExploreMetricModal',

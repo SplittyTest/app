@@ -1,6 +1,6 @@
 <template>
     <div class="settings-form">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <hgroup class="flex items-center gap-2">
                 <div class="page-icon bg-accent small">
                     <Icon type="webhook" color="white" size="20px"/>

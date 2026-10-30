@@ -65,7 +65,7 @@
                         <Fieldset legend="Strategy" class="mb-1.5">
                             <p class="text-sm">What strategy should be used when calculating the values for this metric?</p>
                             <FieldValidation name="strategy" :value="metric.strategy" el=".p-select-label" v-slot="{ error_message }" :validator="validator" :rules="validationRules.strategy">
-                                <div class="grid grid-cols-2 gap-1.5">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                                     <div v-for="option in strategy_options" :key="option.value" :class="['strategy-option', {selected: metric.strategy === option.value}]">
                                         <div :for="`strategy-${option.value}`" @click="selectStrategy(option.value)">
                                             <div class="strategy-label">{{ option.label }}</div>

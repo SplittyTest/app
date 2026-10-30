@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:visible="show_modal" dismissable-mask modal class="metrics-modal w-full max-w-140 bordered">
+    <Dialog v-model:visible="show_modal" dismissable-mask modal class="metrics-modal w-full max-w-150! bordered">
         <template #header>
             <div class="flex-row">
                 <Icon type="Analytics" color="purple" size="24px"/>
@@ -187,8 +187,8 @@ export default defineComponent({
 
     .p-datatable-empty-message td {
         background-color: var(--color-gray-50);
-        border-radius: calc(var(--border-radius) / 2);
         border: 0;
+        border-radius: calc(var(--border-radius) / 2);
     }
 
     th.text-right,

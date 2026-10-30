@@ -11,7 +11,7 @@
                 <div class="test-form w-full">
                     <Card class="settings-tabs">
                         <template #content>
-                            <Tabs :value="current_tab" @update:value="updateRoute">
+                            <Tabs :value="current_tab" scrollable @update:value="updateRoute">
                                 <TabList>
                                     <Tab value="general">General</Tab>
                                     <Tab value="api_keys">API Keys</Tab>
