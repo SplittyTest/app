@@ -135,7 +135,7 @@ export class DuckDB implements OLAPDB {
 			const sql = `
 				SELECT
 					${select},
-					CAST(COUNT(id) AS INTEGER) AS events and calculate stats,
+					CAST(COUNT(id) AS INTEGER) AS events,
 					${strategy}(value) AS event_value,
 					STDDEV_POP(value) AS standard_deviation
 				FROM events
@@ -282,8 +282,8 @@ export class DuckDB implements OLAPDB {
                 SELECT
                     time_bucket(INTERVAL '${interval}', created_at) AS ts,
                     CAST(COUNT(DISTINCT session_id) AS INTEGER) AS count_views,
-                    CAST(SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) AS INTEGER) AS count_events and calculate stats,
-                    SUM(value) AS sum_value
+                    CAST(SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) AS INTEGER) AS count_events,
+                    SUM(CASE WHEN type = ? THEN value ELSE 0 END) AS sum_value
                 FROM events
                 WHERE
                     ${this.variationFilter()}
@@ -298,17 +298,23 @@ export class DuckDB implements OLAPDB {
                     SUM(count_views) OVER (ORDER BY ts ASC) AS views,
                     0 AS missing_views, 
                     SUM(count_views) OVER (ORDER BY ts ASC) AS filled_views,
-                    SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) AS events and calculate stats,
-                    0 AS missing_events and calculate stats,
-                    SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) AS filled_events and calculate stats,
-                    (SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS rate,
-                    (SUM(count_events and calculate stats) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS filled_rate,
+                    SUM(count_events) OVER (ORDER BY ts ASC) AS events,
+                    0 AS missing_events,
+                    SUM(count_events) OVER (ORDER BY ts ASC) AS filled_events,
+                    (SUM(count_events) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS rate,
+                    (SUM(count_events) OVER (ORDER BY ts ASC) * 1.0 / NULLIF(SUM(count_views) OVER (ORDER BY ts ASC), 0)) AS filled_rate,
                     ${query_calculations}
                 FROM (${variation_stats_query}) sub
             `;
 
-				// Placeholders in order: CASE WHEN type = ?, the variation filter, then each segment filter
-				const rows = await runAll(this.conn, full_query, [metric.event_type, variation.id, ...segment_params]);
+				// Placeholders in order: the two CASE WHEN type = ? (event count and value), the variation filter,
+				// then each segment filter
+				const rows = await runAll(this.conn, full_query, [
+					metric.event_type,
+					metric.event_type,
+					variation.id,
+					...segment_params,
+				]);
 
 				results[variation.id] = rows;
 			}),

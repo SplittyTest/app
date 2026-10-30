@@ -5,10 +5,10 @@
 				<div class="page-icon bg-brand">
 					<Icon type="Devices" color="white" size="28px"/>
 				</div>
-				<h1>Test Projects</h1>
+				<h1>Projects</h1>
 			</hgroup>
 			<div v-if="$sessionStore.minRole('tester')" class="controls">
-				<Button label="New Test Project" @click="newProject()">
+				<Button label="New Project" @click="newProject()">
 					<template #icon>
 						<Icon type="Add"/>
 					</template>
@@ -26,8 +26,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
 import { sortBy, startCase } from 'lodash-es';
+import { defineComponent } from 'vue';
 import TestProjectCard from './ProjectCard.vue';
 
 export default defineComponent({

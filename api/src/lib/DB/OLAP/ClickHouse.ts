@@ -293,7 +293,7 @@ export class ClickHouse implements OLAPDB {
 				)
                 SELECT
                     ${select_fields}
-                    count AS events,
+                    sum(count) AS events,
                     ${query_strategy}(value) AS event_value,
                     stddevPop(value) AS standard_deviation
                 FROM EventValues

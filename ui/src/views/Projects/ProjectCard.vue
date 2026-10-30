@@ -69,7 +69,7 @@ import { startCase } from 'lodash-es';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-    name : 'TestProjectCard',
+    name : 'ProjectCard',
     props : {
         project: {
             type: Object,
@@ -80,13 +80,13 @@ export default defineComponent({
         menu() {
             const menu_items: any[] = [
                 { 
-                    label: 'Edit Test Project',
+                    label: 'Edit Project',
                     icon_color: 'bg-alt-500!',
                     icon: 'Edit',
                     command: this.editProject
                 },
                 {
-                    label: 'Duplicate Test Project',
+                    label: 'Duplicate Project',
                     icon_color: 'bg-alt-500!',
                     icon: 'Content Copy',
                     command: this.duplicateProject
@@ -95,7 +95,7 @@ export default defineComponent({
 
             if (+this.project.active_tests === 0) {
                 menu_items.push({
-                    label: 'Delete Test Project',
+                    label: 'Delete Project',
                     icon_color: 'bg-red-500!',
                     icon: 'Delete',
                     command: this.deleteProject 

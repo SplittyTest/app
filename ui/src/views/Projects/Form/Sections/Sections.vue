@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between mb-2">
             <div>
                 <strong class="text-lg mb-0">Test Sections</strong>
-                <div class="text-gray-500 text-sm mb-0">These are specific sections of your test project you want to run tests against</div>
+                <div class="text-gray-500 text-sm mb-0">These are specific sections of your project you want to run tests against</div>
             </div>
             <Button label="Add Section" @click="editSection()">
                 <template #icon>

@@ -104,14 +104,14 @@
 </template>
 
 <script lang="ts">
+import { useFormValidator } from '@splitty-test/validation';
+import { hash } from 'hash-it';
+import { cloneDeep, defaultsDeep } from 'lodash-es';
+import { useConfirm } from 'primevue/useconfirm';
 import { defineComponent } from 'vue';
-import { cloneDeep, defaultsDeep, isNumber, snakeCase, sortBy, uniqueId } from 'lodash-es';
-import { useFormValidator, rules } from '@splitty-test/validation';
 import Details from './Sections/Details.vue';
 import Sections from './Sections/Sections.vue';
 import Settings from './Sections/Settings.vue';
-import { hash } from 'hash-it';
-import { useConfirm } from 'primevue/useconfirm';
 
 export default defineComponent({
     name: 'ProjectForm',
@@ -214,8 +214,8 @@ export default defineComponent({
                 if (status < 300) {
                     this.$toast.add({
                         severity: 'success',
-                        summary: 'Test Project Saved',
-                        detail: 'The test project was successfully saved',
+                        summary: 'Project Saved',
+                        detail: 'The project was successfully saved',
                         life: 3000
                     });
                     this.$router.push('/projects');
@@ -228,7 +228,7 @@ export default defineComponent({
             if (this.isArchivable) {
                 this.$confirm.require({
                     target: event.currentTarget as HTMLElement,
-                    message: 'Are you sure you want to archive this test project?',
+                    message: 'Are you sure you want to archive this project?',
                     accept: async () => {
                         try {
                             await this.$API.patch(`/api/projects/${this.project.id}`, { project: { archived: true } });
@@ -285,7 +285,7 @@ export default defineComponent({
         },
     },
     async beforeMount() {
-        // Get the test project data
+        // Get the project data
         if (this.$route.params.project_id) {
             this.fetchProject();
         }
@@ -358,8 +358,8 @@ export default defineComponent({
 .sections-list {
     button {
         color: var(--color-gray-500);
-        justify-content: flex-start;
         gap: 0.75em;
+        justify-content: flex-start;
         margin-bottom: 0.25rem;;
 
         &.selected {

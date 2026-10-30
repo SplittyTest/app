@@ -5,7 +5,7 @@
                 <div class="controls">
                     <div class="field alt-label max-w-[75%]">
                         <strong>Testing Enabled</strong>
-                        <div class="description">Allow tests to run on this test project</div>
+                        <div class="description">Allow tests to run on this project</div>
                     </div>
                     <div class="field max-w-5">
                         <ToggleSwitch fluid v-model="project.testing_enabled"/>
@@ -14,7 +14,7 @@
                  <div v-if="project.testing_enabled" class="controls group-settings">
                     <div class="field alt-label">
                         <strong>Max Concurrent Tests</strong>
-                        <div class="description">The maximum number of tests that can concurrently run across all sections of this test project</div>
+                        <div class="description">The maximum number of tests that can concurrently run across all sections of this project</div>
                     </div>
                     <div class="field max-w-6">
                         <InputNumber fluid v-model="project.max_concurrent_tests" class="input-center"/>
@@ -40,7 +40,7 @@
                 <div class="controls">
                     <div class="field alt-label max-w-[75%]">
                         <strong>Log Unknown Events</strong>
-                        <div class="description">Enable logging of unregistered events for this test project</div>
+                        <div class="description">Enable logging of unregistered events for this project</div>
                     </div>
                     <div class="field max-w-5">
                         <ToggleSwitch fluid v-model="project.settings.log_unknown_events"/>

@@ -392,8 +392,158 @@ $ kubectl -n splittytest delete pvc -l app.kubernetes.io/instance=splittytest
 
 ## Configuration
 
-Coming soon...
+Splitty Test reads its settings with [node-config](https://github.com/node-config/node-config). The defaults live in `api/config/default.js`, and you can override them in three ways:
+
+1. **Environment variables**, for the common settings listed below. The API also loads an `api/.env` file if one exists. Docker Compose reads the `.env` file next to `docker-compose.yml` instead.
+2. **The `NODE_CONFIG` environment variable**, a JSON object merged over the defaults. Use it for any setting that doesn't have its own environment variable.
+3. **A config file** such as `api/config/local.js`, which node-config merges over the defaults. This only works when running from source; Docker builds leave `local*` files out of the image.
+
+### Environment variables
+
+**App and security**
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `SESSION_SECRET` | `test-secret` | Signs session cookies. Use a random value of at least 32 characters. In production the API refuses to start without one. |
+| `AUTH_SECRET` | _(none)_ | Reserved for signing auth tokens; not used by the current version. Set a random value anyway. |
+| `NODE_ENV` | _(unset)_ | `production`, `dev` or unset. See [NODE_ENV](#node-env) below. |
+| `API_SESSION_MAX_AGE` | `3600000` | Lifetime of sessions created with an API key, in milliseconds (default 1 hour). |
+| `WEBHOOK_ALLOW_PRIVATE_NETWORKS` | `false` | Set to `true` to allow webhooks to internal or private network addresses. By default these are blocked. |
+| `UI_PATH` | `ui/dist` | Folder of the built UI that the API serves. |
+
+**Main data store**
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `STORE_TYPE` | `postgres` | `postgres` or `sqlite` |
+| `POSTGRES_HOST` | `localhost` | |
+| `POSTGRES_PORT` | `5432` | |
+| `POSTGRES_USER` | `postgres` | |
+| `POSTGRES_PASSWORD` | _(none)_ | |
+| `POSTGRES_DATABASE` | `splittytest` | |
+| `SQLITE_PATH` | `~/.local/share/splittytest/sqlite.db` | Only used when `STORE_TYPE` is `sqlite` |
+
+**Metrics database**
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `OLAP_TYPE` | `clickhouse` | `clickhouse` or `duckdb` |
+| `CLICKHOUSE_URL` | `http://localhost:8123` | |
+| `CLICKHOUSE_USERNAME` | `default` | |
+| `CLICKHOUSE_PASSWORD` | `default` | |
+| `CLICKHOUSE_DATABASE` | `splittytest` | |
+| `DUCKDB_PATH` | `~/.local/share/splittytest/duck.db` | Only used when `OLAP_TYPE` is `duckdb` |
+
+**Redis**
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `REDIS_USERNAME` | _(none)_ | |
+| `REDIS_PASSWORD` | _(none)_ | |
+
+Redis is expected at `localhost:6379`. To use another host or port, set it through `NODE_CONFIG` (`REDIS_HOST` and `REDIS_PORT` have no effect, because the Redis client only reads the host and port from its `socket` settings):
+
+```bash
+NODE_CONFIG='{"db":{"dict":{"redis":{"socket":{"host":"redis.internal","port":6379}}}}}'
+```
+
+You can also pass a connection URL instead: `{"db":{"dict":{"redis":{"url":"redis://user:password@redis.internal:6379"}}}}`.
+
+**Email and migrations**
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `MAILGUN_API_KEY` | _(none)_ | See [Using MailGun](#using-mailgun) |
+| `MAILGUN_DOMAIN` | _(none)_ | See [Using MailGun](#using-mailgun) |
+| `MIGRATOR_TYPE` | `store` | Which database the migrations run against (`store` or `olap`). The `migrate:*` npm scripts set this for you. |
+| `INIT_USER` | _(none)_ | JSON for the first admin user, e.g. `{"email":"me@example.com","password":"a-strong-password"}`. Only used when the migrations run against an empty database. |
+
+### NODE_ENV
+
+| Value | Effect |
+| --- | --- |
+| `production` | Session cookies are secure-only, so the app must be served over **HTTPS**. Cross-origin requests are limited to each API key's domain whitelist. Known bots are filtered from tracking. The API won't start with a missing or weak `SESSION_SECRET`. |
+| `dev` | For local development. The API doesn't serve the UI (run the UI's own dev server instead) and allows cross-origin requests from any origin. |
+| _(unset)_ | The API serves the UI. The admin API only accepts cross-origin requests from `localhost`, and the tracking endpoints accept them from any origin. This is what the default Docker Compose setup uses. |
+
+### Other settings
+
+These have no environment variable of their own. Set them with `NODE_CONFIG` or a config file.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `app.url` | `http://localhost:3001` | Public URL of the app, used for links in emails. Docker Compose sets this from `APP_URL`. |
+| `api.port` | `3000` | Port the API listens on |
+| `log.level` | `debug` | `trace`, `debug`, `info`, `warn`, `error` or `fatal` |
+| `cache.expiration.default` | `300` | How long cached database reads are kept, in seconds |
+| `email.from` | `Splitty Test <no-reply@splittytest.com>` | Sender of emails |
+| `email.reply_to` | `Splitty Test <no-reply@splittytest.com>` | Reply-to address of emails |
+| `email.transport.host` | `api.mailgun.net` | Mailgun API host; use `api.eu.mailgun.net` for EU accounts |
+| `upload.size_limit` | `25` | Maximum upload size, in MB |
+| `upload.mime_types` | _(none)_ | Allowed upload types, e.g. `["image/jpeg","image/png","image/gif"]` |
+| `upload.local.folder` | `public/uploads/` | Where uploaded files are stored |
+
+For example, to log less and serve the app from your own domain:
+
+```bash
+NODE_CONFIG='{"log":{"level":"info"},"app":{"url":"https://experiments.example.com"}}'
+```
+
+::: tip
+With Helm, put these in `app.nodeConfig` in your values file instead of setting `NODE_CONFIG` yourself. See [Other settings](#other-settings) under Helm.
+:::
 
 ## Using MailGun
 
-Coming soon...
+Splitty Test sends email through [Mailgun](https://www.mailgun.com/). Today it's only used for password reset emails. You can run Splitty Test without it; see [Running without email](#running-without-email).
+
+### 1. Set up a sending domain
+
+1. Create a Mailgun account.
+2. Add a sending domain, ideally a subdomain such as `mg.example.com`, and add the DNS records Mailgun shows you (SPF, DKIM and, optionally, tracking and MX records).
+3. Wait for Mailgun to verify the domain.
+4. Create a sending API key for the domain.
+
+::: warning
+Mailgun's sandbox domain only delivers to recipients you've added as authorized recipients in Mailgun, so password reset emails to anyone else won't arrive. Use your own verified domain for real use.
+:::
+
+### 2. Configure Splitty Test
+
+Set the API key and the sending domain:
+
+| Setup | Where to set them |
+| --- | --- |
+| Docker Compose | `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` in the `.env` file next to `docker-compose.yml` |
+| Helm | `mailgun.apiKey` and `mailgun.domain` in your values file, or the `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` keys of `secrets.existingSecret` |
+| From source | `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` in `api/.env` or your environment |
+
+Then make sure of two more settings:
+
+* **The app's public URL** (`APP_URL` with Docker Compose, `app.url` otherwise). Password reset links point to it, so it must be the address your users open the app on.
+* **The sender address** (`email.from` and `email.reply_to`). Use an address on your verified domain, or Mailgun may reject the message or it may land in spam:
+
+```bash
+NODE_CONFIG='{"email":{"from":"Acme Experiments <no-reply@mg.example.com>","reply_to":"Acme Experiments <no-reply@mg.example.com>"}}'
+```
+
+If your Mailgun account is in the **EU region**, also point Splitty Test at the EU API by adding `"transport":{"host":"api.eu.mailgun.net"}` under `email` in the same `NODE_CONFIG`.
+
+Restart the app after changing any of these.
+
+### 3. Test it
+
+Sign out, click **I forgot my password** on the login page and enter your email address. The email should arrive within a minute. The reset link is valid for **5 minutes** and can only be used once.
+
+### Troubleshooting
+
+The forgot-password page shows the same confirmation whether or not the address has an account, so it doesn't reveal who has one. If nothing arrives:
+
+* Check the app's logs. A failed send is logged as `Email not sent`.
+* Check the **Logs** page in Mailgun to see whether the message was accepted, rejected or bounced.
+* Make sure the API key belongs to the sending domain you set, and that the region matches (US or EU).
+* Make sure the account you tested with is **active**. Suspended and archived users don't receive reset emails.
+
+### Running without email
+
+The app starts and works normally without Mailgun. Docker Compose and the Helm chart fill in placeholder credentials so the mail setup doesn't fail on startup. Password reset emails simply won't be sent, so if someone is locked out, an admin can set a new password for them in **Settings → Users**.

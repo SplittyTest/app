@@ -2,7 +2,7 @@
     <div class="project-form-section details">
         <div class="control-group">
             <div class="inner">
-                <label class="control-label">Test Project Name:</label>
+                <label class="control-label">Project Name:</label>
                 <div class="controls">
                     <div class="field">
                         <FieldValidation name="name" :value="project.name" v-slot="{ error_message }" :validator="validator" :rules="validationRules.name">
@@ -53,9 +53,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
 import { rules } from '@splitty-test/validation';
 import { snakeCase } from 'lodash-es';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'ProjectFormDetails',
