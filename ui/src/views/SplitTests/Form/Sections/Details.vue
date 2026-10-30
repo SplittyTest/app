@@ -30,21 +30,21 @@
         </div>
         <div class="grid grid-cols-2 gap-3">
 
-            <!-- Subject -->
+            <!-- Project -->
             <div class="control-group">
                 <div class="inner">
-                    <label class="control-label">Subject:</label>
+                    <label class="control-label">Project:</label>
                     <div class="controls">
                         <div class="field">
-                            <FieldValidation name="subject_id" :value="test.subject_id" v-slot="{ error_message }" el=".p-select-label" :validator="validator" :rules="validationRules.subject_id">
+                            <FieldValidation name="project_id" :value="test.project_id" v-slot="{ error_message }" el=".p-select-label" :validator="validator" :rules="validationRules.project_id">
                                 <Select
                                     fluid
-                                    v-model="test.subject_id"
+                                    v-model="test.project_id"
                                     :invalid="!!error_message"
-                                    :options="$sessionStore.subject_options"
+                                    :options="$sessionStore.project_options"
                                     option-label="label"
                                     option-value="value"
-                                    placeholder="Select Subject"
+                                    placeholder="Select Project"
                                     :disabled="!isPending"
                                 >
                                 </Select>
@@ -101,10 +101,10 @@ export default defineComponent({
             return this.test.status === 'pending';
         },
         sectionOptions() {
-            if (this.test.subject_id) {
-                const selected_subject = this.$sessionStore.subject_options.find((option: any) => option.value === this.test.subject_id);
-                if (selected_subject) {
-                    return selected_subject.sections;
+            if (this.test.project_id) {
+                const selected_project = this.$sessionStore.project_options.find((option: any) => option.value === this.test.project_id);
+                if (selected_project) {
+                    return selected_project.sections;
                 }
             }
             return [];
@@ -114,8 +114,8 @@ export default defineComponent({
                 name: [
                     rules.required('A test name is required')
                 ],
-                subject_id: [
-                    rules.required('A subject for this test is required')
+                project_id: [
+                    rules.required('A project for this test is required')
                 ],
                 section_id: [
                     rules.required('A section for this test is required')

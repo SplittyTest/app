@@ -1,11 +1,11 @@
 <template>
     <div class="test-form-section audiences">
         <p>Select targeted audiences to serve this test to...</p>
-        <Message severity="error" v-if="!test.subject_id">
+        <Message severity="error" v-if="!test.project_id">
             <template #icon>
                 <Icon type="Error" color="red" size="20px"/>
             </template>
-            A subject must be selected to select an audience for this test
+            A project must be selected to select an audience for this test
         </Message>
         <FieldSet legend="Included Audiences" class="mb-2">
             <div class="included-audiences">
@@ -116,8 +116,8 @@ export default defineComponent({
         };
     },
     computed: {
-        subjectId() {
-            return this.test.subject_id;
+        projectId() {
+            return this.test.project_id;
         },
         availableAudiences() {
             return this.audiences.filter((audience: any) => {
@@ -139,7 +139,7 @@ export default defineComponent({
         },
     },
     watch: {
-        async subjectId(new_value: string, old_value: string) {
+        async projectId(new_value: string, old_value: string) {
             if (new_value !== old_value) {
                 await this.fetchAudiences();
 
@@ -156,11 +156,11 @@ export default defineComponent({
     methods: {
         title,
         async fetchAudiences() {
-            if (!this.test.subject_id) return;
+            if (!this.test.project_id) return;
             const { data } = await this.$API.get('/api/audiences', {
                 params: {
                     filter: {
-                        subject_id: this.test.subject_id
+                        project_id: this.test.project_id
                     }
                 }
             });

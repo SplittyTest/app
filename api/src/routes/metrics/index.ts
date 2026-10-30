@@ -9,14 +9,14 @@ export default function (router: Router) {
 
 		// Get the list of metrics
 		.get(requireRole('viewer'), async (req, res) => {
-			let metrics: Metric[] = [];
-			if (req.query.filter && req.query.filter.subject_id) {
+			let metrics: Metric[];
+			if (req.query.filter && req.query.filter.project_id) {
 				metrics = await DB.Metrics.getByFilter(
 					(eb: any) =>
 						eb.and({
-							subject_id: req.query.filter.subject_id,
+							project_id: req.query.filter.project_id,
 						}),
-					req.query.filter.subject_id,
+					req.query.filter.project_id,
 				);
 			} else {
 				metrics = await DB.Metrics.getAll();

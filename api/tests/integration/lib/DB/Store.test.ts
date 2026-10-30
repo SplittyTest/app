@@ -5,7 +5,7 @@ import { ulid } from 'ulid';
 import { sql } from 'kysely';
 import { omit } from 'lodash';
 import { zAPIKeySchema } from '../../../../src/lib/DB/tables/api_keys/api_key.schema';
-import { zSubjectSchema } from '../../../../src/lib/DB/tables/subjects/subject.schema';
+import { zProjectSchema } from '../../../../src/lib/DB/tables/projects/project.schema';
 import { asyncForEach } from 'modern-async';
 
 describe('Store', () => {
@@ -100,11 +100,11 @@ describe('Store', () => {
 
         it('insert() works with json', async () => {
             try {
-                const subjects = await zSubjectSchema.parseAsync({
-                    id: "test_subject_1",
-                    name: "Test Subject",
+                const projects = await zProjectSchema.parseAsync({
+                    id: "test_project_1",
+                    name: "Test Project",
                     type: "website",
-                    description: "A subject for testing",
+                    description: "A project for testing",
                     sections: [
                         {
                             id: "section1",
@@ -120,16 +120,16 @@ describe('Store', () => {
                     testing_enabled: true,
                 });
 
-                await DB.Store.insertInto("subjects").values({
-                    ...subjects,
-                    sections: JSON.stringify(subjects.sections),
-                    data: JSON.stringify(subjects.data),
+                await DB.Store.insertInto("projects").values({
+                    ...projects,
+                    sections: JSON.stringify(projects.sections),
+                    data: JSON.stringify(projects.data),
                 }).execute();
 
-                const res = await DB.Store.selectFrom("subjects").selectAll().where(sql.ref("id"), "=", subjects.id).executeTakeFirst();
-                expect(res).toMatchObject(subjects);
+                const res = await DB.Store.selectFrom("projects").selectAll().where(sql.ref("id"), "=", projects.id).executeTakeFirst();
+                expect(res).toMatchObject(projects);
             } finally {
-                await DB.Store.deleteFrom("subjects").where(sql.ref("id"), "=", "test_subject_1").execute()
+                await DB.Store.deleteFrom("projects").where(sql.ref("id"), "=", "test_project_1").execute()
             }
         })
     });

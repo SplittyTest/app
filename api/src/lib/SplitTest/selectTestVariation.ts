@@ -1,7 +1,7 @@
 import DB from '@lib/DB';
 import { ExperimentError } from '@lib/Errors/ExperimentError';
 import { Session } from '@/types/schemas';
-import hash from 'hash-it';
+import { hash } from 'hash-it';
 import { isNil, isUndefined } from 'lodash-es';
 import { getStrategy } from '../Analysis';
 

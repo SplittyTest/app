@@ -24,7 +24,7 @@
 								<div class="inner">
 									<div class="controls">
 										<div class="field">
-											<MultiSelect class="w-25" v-model="subject_filter" :show-toggle-all="false" :options="$sessionStore.subject_options" option-label="label" option-value="value" placeholder="Filter by Subject"/>
+											<MultiSelect class="w-25" v-model="project_filter" :show-toggle-all="false" :options="$sessionStore.project_options" option-label="label" option-value="value" placeholder="Filter by Project"/>
 										</div>
 									</div>
 								</div>
@@ -68,9 +68,9 @@
 									<span class="description">{{ audience.description }}</span>
 								</template>
 							</Column>
-							<Column header="Subject" sortable field="subject">
+							<Column header="Project" sortable field="project">
 								<template #body="{data: audience}">
-									{{ audience.subject_name }}
+									{{ audience.project_name }}
 								</template>
 							</Column>
 							<Column header="Filters">
@@ -120,8 +120,8 @@ export default defineComponent({
 					id: 1,
 					name: 'Mobile Users',
 					description: 'Users accessing the site from a mobile device',
-					subject_id: 'my_website',
-					subject_name: 'My Website',
+					project_id: 'my_website',
+					project_name: 'My Website',
 					filters: [
 						{
 							property: 'device',
@@ -134,8 +134,8 @@ export default defineComponent({
 					id: 2,
 					name: 'Desktop Users',
 					description: 'Users accessing the site from a desktop device',
-					subject_id: 'my_website',
-					subject_name: 'My Website',
+					project_id: 'my_website',
+					project_name: 'My Website',
 					filters: [
 						{
 							property: 'device',
@@ -148,8 +148,8 @@ export default defineComponent({
 					id: 3,
 					name: 'New Users',
 					description: 'Users who have visited the site for the first time',
-					subject_id: 'my_website',
-					subject_name: 'My Website',
+					project_id: 'my_website',
+					project_name: 'My Website',
 					filters: [
 						{
 							property: 'visit_count',
@@ -159,15 +159,15 @@ export default defineComponent({
 					]
 				}
 			] as any[],
-			subject_filter: [] as any[],
-			subject_options: [] as any[]
+			project_filter: [] as any[],
+			project_options: [] as any[]
 		}
 	},
 	computed: {
 		filteredAudiences() {
-			if (this.subject_filter.length === 0) return this.audiences;
+			if (this.project_filter.length === 0) return this.audiences;
 			return this.audiences.filter((audience) => {
-				return this.subject_filter.includes(audience.subject_id);
+				return this.project_filter.includes(audience.project_id);
 			});
 		}
 	},
@@ -176,7 +176,7 @@ export default defineComponent({
 		async getAudiences() {
 			const { data } = await this.$API.get('/api/audiences');
 			this.audiences = data.map((row: any) => {
-				row.subject_name = row.subject_id ? this.$sessionStore.subject_options.find((option: any) => option.value === row.subject_id)?.label : '';
+				row.project_name = row.project_id ? this.$sessionStore.project_options.find((option: any) => option.value === row.project_id)?.label : '';
 				return row;
 			});
 		},

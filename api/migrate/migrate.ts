@@ -2,7 +2,27 @@ import 'dotenv/config';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import config from 'config';
-import { Migrator, FileMigrationProvider, Kysely } from 'kysely';
+import { Kysely } from 'kysely';
+import { Migrator, type Migration, type MigrationProvider } from 'kysely/migration';
+
+// Loads migration files with require() so ts-node compiles them. Kysely's FileMigrationProvider uses a
+// native import(), which skips ts-node and makes Node load the .ts files as ES modules, where imports
+// without file extensions (e.g. '../../src/lib/DB/Table.schema') fail to resolve.
+class RequireMigrationProvider implements MigrationProvider {
+	constructor(private folder: string) {}
+
+	async getMigrations(): Promise<Record<string, Migration>> {
+		const migrations: Record<string, Migration> = {};
+		const files = (await fs.readdir(this.folder)).sort();
+		for (const file of files) {
+			if (!/\.(ts|js|cjs|mts|mjs)$/.test(file) || file.endsWith('.d.ts')) continue;
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const migration = require(path.join(this.folder, file));
+			migrations[file.replace(/\.[^.]+$/, '')] = migration.default ?? migration;
+		}
+		return migrations;
+	}
+}
 import DB from '../src/lib/DB';
 import { assert } from 'console';
 import { type DB as DBType } from '../src/lib/DB/Table.schema';
@@ -10,6 +30,32 @@ import { OLAPDB as OLAPDBType } from '../src/types/db';
 import { ClickhouseDialect } from '@founderpath/kysely-clickhouse';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { DuckDbDialect } from '@oorabona/kysely-duckdb';
+
+// Migrations that were renamed after some databases had already run them under the old name.
+// Kysely stops with "corrupted migrations" when a recorded name has no file, so the records are renamed first.
+const renamed_migrations: Record<string, Record<string, string>> = {
+	store: {
+		'002-user-set': '002-settings',
+	},
+};
+
+async function renameLegacyMigrations(db: Kysely<any>, renames: Record<string, string>) {
+	const tables = await db.introspection.getTables({ withInternalKyselyTables: true });
+	if (!tables.some((t) => t.name === 'kysely_migration')) return;
+
+	for (const [old_name, new_name] of Object.entries(renames)) {
+		const existing = await db
+			.selectFrom('kysely_migration')
+			.select('name')
+			.where('name', 'in', [old_name, new_name])
+			.execute();
+		const names = existing.map((row) => row.name);
+		if (names.includes(old_name) && !names.includes(new_name)) {
+			await db.updateTable('kysely_migration').set({ name: new_name }).where('name', '=', old_name).execute();
+			console.log(`renamed migration record "${old_name}" to "${new_name}"`);
+		}
+	}
+}
 
 async function migrateToLatest() {
 	const migrator_type = config.get('migrator.type');
@@ -55,14 +101,14 @@ async function migrateToLatest() {
 			throw new Error(`migrator.type = ${migrator_type} not configured`);
 	}
 
+	if (renamed_migrations[migration_dir]) {
+		await renameLegacyMigrations(db as Kysely<any>, renamed_migrations[migration_dir]);
+	}
+
 	const migrator = new Migrator({
 		db,
-		provider: new FileMigrationProvider({
-			fs,
-			path,
-			// This needs to be an absolute path.
-			migrationFolder: path.join(__dirname, migration_dir),
-		}),
+		// This needs to be an absolute path.
+		provider: new RequireMigrationProvider(path.join(__dirname, migration_dir)),
 	});
 
 	const { error, results } = await migrator.migrateToLatest();

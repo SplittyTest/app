@@ -5,43 +5,43 @@
         </template> -->
         <template #title>
             <div class="flex items-start justify-between">
-                <div class="subject-title flex items-center gap-1.5">
-                    <div class="subject-icon">
-                        <Icon :type="subjectIcon(subject.type)" color="white" size="24px"/>
+                <div class="project-title flex items-center gap-1.5">
+                    <div class="project-icon">
+                        <Icon :type="projectIcon(project.type)" color="white" size="24px"/>
                     </div>
                     <div>
-                        <div class="name">{{  subject.name }}</div>
-                        <div class="text-sm text-gray-400">{{ startCase(subject.type) }}</div>
+                        <div class="name">{{  project.name }}</div>
+                        <div class="text-sm text-gray-400">{{ startCase(project.type) }}</div>
                     </div>
                 </div>
                 <div class="testing-status">
-                    <template v-if="!subject.testing_enabled">
+                    <template v-if="!project.testing_enabled">
                         <Icon type="Content Paste Off" color="red" size="24px"/>
                     </template>
                 </div>
             </div>
         </template>
         <template #content>
-            <p>{{ subject.description }}</p>
-            <ul class="subject-details">
+            <p>{{ project.description }}</p>
+            <ul class="project-details">
                 <li class="flex justify-between">
                     <div class="label">Active / Paused Tests</div>
-                    <div class="value">{{ subject.active_tests }}</div>
+                    <div class="value">{{ project.active_tests }}</div>
                 </li>
                 <li class="flex justify-between">
                     <div class="label">Pending Tests</div>
-                    <div class="value">{{ subject.pending_tests }}</div>
+                    <div class="value">{{ project.pending_tests }}</div>
                 </li>
                 <li class="flex justify-between">
                     <div class="label">Complete Tests</div>
-                    <div class="value">{{ subject.complete_tests }}</div>
+                    <div class="value">{{ project.complete_tests }}</div>
                 </li>
             </ul>
         </template>
         <template #footer>
             <div class="flex items-center w-full gap-2">
                 <ButtonGroup class="w-full">
-                    <Button variant="outlined" class="flex-auto" @click="viewSplitTests(subject)">View Split Tests</Button>
+                    <Button variant="outlined" class="flex-auto" @click="viewSplitTests(project)">View Split Tests</Button>
                     <Button v-if="$sessionStore.minRole('tester')" variant="outlined" @click="toggle">
                         <template #icon>
                             <Icon type="More-Horiz" size="20px"/>
@@ -64,13 +64,14 @@
 </template>
 
 <script lang="ts">
+import { escapeHtml } from '@/lib/utils/safeHtml';
 import { startCase } from 'lodash-es';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-    name : 'TestSubjectCard',
+    name : 'TestProjectCard',
     props : {
-        subject: {
+        project: {
             type: Object,
             required: true
         }
@@ -79,25 +80,25 @@ export default defineComponent({
         menu() {
             const menu_items: any[] = [
                 { 
-                    label: 'Edit Test Subject',
+                    label: 'Edit Test Project',
                     icon_color: 'bg-alt-500!',
                     icon: 'Edit',
-                    command: this.editSubject
+                    command: this.editProject
                 },
                 {
-                    label: 'Duplicate Test Subject',
+                    label: 'Duplicate Test Project',
                     icon_color: 'bg-alt-500!',
                     icon: 'Content Copy',
-                    command: this.duplicateSubject
+                    command: this.duplicateProject
                 }
             ];
 
-            if (+this.subject.active_tests === 0) {
+            if (+this.project.active_tests === 0) {
                 menu_items.push({
-                    label: 'Delete Test Subject',
+                    label: 'Delete Test Project',
                     icon_color: 'bg-red-500!',
                     icon: 'Delete',
-                    command: this.deleteSubject 
+                    command: this.deleteProject 
                 });
             }
             else {
@@ -114,7 +115,7 @@ export default defineComponent({
     },
     methods: {
         startCase,
-        subjectIcon(type: string) {
+        projectIcon(type: string) {
             switch (type) {
                 case 'website':
                     return 'Web';
@@ -131,28 +132,28 @@ export default defineComponent({
             const menu_instance = this.$refs.menu as any;
 			menu_instance.toggle(event);
 		},
-        editSubject() {
-			this.$router.push(`/subjects/edit/${this.subject.id}`);
+        editProject() {
+			this.$router.push(`/projects/edit/${this.project.id}`);
 		},
-        duplicateSubject() {
-            this.$router.push(`/subjects/edit/new?duplicate_subject_id=${this.subject.id}`);
+        duplicateProject() {
+            this.$router.push(`/projects/edit/new?duplicate_project_id=${this.project.id}`);
         },
-		deleteSubject() {
+		deleteProject() {
 			this.$confirm.require({
 				group: 'confirmation',
-				header: 'Delete Subject',
-				message: `Are you sure you want to delete the subject named <strong>${this.subject.name}</strong>? This may break any tests associated with it and cannot be undone.`,
+				header: 'Delete Project',
+				message: `Are you sure you want to delete the project named <strong>${escapeHtml(this.project.name)}</strong>? This may break any tests associated with it and cannot be undone.`,
 				acceptProps: {
 					severity: 'danger',
-					label: 'Delete Subject'
+					label: 'Delete Project'
 				},
 				accept: async () => {
 					try {
-						await this.$API.delete(`/api/subjects/${this.subject.id}`);
+						await this.$API.delete(`/api/projects/${this.project.id}`);
 						this.$toast.add({
 							severity: 'success',
-							summary: 'Subject Deleted',
-							detail: `The subject named ${this.subject.name} was successfully deleted`,
+							summary: 'Project Deleted',
+							detail: `The project named ${this.project.name} was successfully deleted`,
 							life: 5000
 						});
 					} catch (err) {
@@ -169,15 +170,15 @@ export default defineComponent({
 				}
 			});
 		},
-        viewSplitTests(subject: any) {
-			this.$router.push(`/split-tests?subject_id=${subject.id}`);
+        viewSplitTests(project: any) {
+			this.$router.push(`/split-tests?project_id=${project.id}`);
 		}
     }
 });
 </script>
 
 <style scoped lang="less">
-.subject-details {
+.project-details {
 	border-top: 1px solid var(--color-gray-200);
 	margin-top: 1em;
 	
@@ -189,7 +190,7 @@ export default defineComponent({
 	}
 }
 
-.subject-icon {
+.project-icon {
     align-items: center;
     background-color: var(--color-brand);
     border-radius: 25px;

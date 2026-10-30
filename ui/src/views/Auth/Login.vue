@@ -96,7 +96,7 @@ export default defineComponent({
             if (is_valid) {
                 const user = await this.$sessionStore.login(this.form);
                 if (user) {
-                    this.$router.push('/subjects');
+                    this.$router.push('/projects');
                 }
             }
         }

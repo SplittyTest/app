@@ -12,11 +12,11 @@
                     <div class="metric-form">
                         <div class="control-group">
                             <div class="inner">
-                                <label class="control-label">Subject:</label>
+                                <label class="control-label">Project:</label>
                                 <div class="controls">
                                     <div class="field">
-                                        <FieldValidation name="subject_id" :value="metric.subject_id" el=".p-select-label" v-slot="{ error_message }" :validator="validator" :rules="validationRules.subject_id">
-                                            <Select fluid v-model="metric.subject_id" :options="$sessionStore.subject_options" option-label="label" option-value="value" placeholder="Select Subject"/>
+                                        <FieldValidation name="project_id" :value="metric.project_id" el=".p-select-label" v-slot="{ error_message }" :validator="validator" :rules="validationRules.project_id">
+                                            <Select fluid v-model="metric.project_id" :options="$sessionStore.project_options" option-label="label" option-value="value" placeholder="Select Project"/>
                                             <FormError :error="error_message"/>
                                         </FieldValidation>
                                     </div>
@@ -196,7 +196,7 @@ const default_metric = {
     id: null as string | null,
     name: '' as string,
     description: '' as string,
-    subject_id: null as string | null,
+    project_id: null as string | null,
     event_type: '' as string,
     strategy: 'rate' as 'rate' | 'sum' | 'avg' | 'median',
     session_strategy: 'all' as string,
@@ -258,8 +258,8 @@ export default {
         },
         validationRules() {
             return {
-                subject_id: [
-                    rules.required('A subject is required')
+                project_id: [
+                    rules.required('A project is required')
                 ],
                 name: [
                     rules.required('An name is required')

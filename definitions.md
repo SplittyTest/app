@@ -16,11 +16,14 @@ A specific version of the experience being tested (e.g., "Control", "Blue Button
 *   Contains a `weight` (probability of selection).
 *   Contains a `data` payload (JSON configuration sent to the client).
 
-### Subject
+### Project
+A website or application that tests run on, identified by `project_id`. Each project has its own sections, API keys, metrics, audiences and webhooks.
+
+### Visitor
 The entity being tested. This is usually a user, but could be a browser fingerprint, device ID, or account ID. It is the key used for consistent hashing and assignment.
 
 ### Section
-A specific area or feature of the application where tests run (e.g., "checkout_page", "pricing_modal"). Multiple tests can target the same section, but a subject usually participates in only one test per section at a time.
+A specific area or feature of the application where tests run (e.g., "checkout_page", "pricing_modal"). Multiple tests can target the same section, but a visitor usually participates in only one test per section at a time.
 
 ### Session
 Represents a user's interaction period. It tracks which tests the user has seen (`test_ids`) and which variations they were assigned (`variation_ids`) to ensure consistency (stickiness) across requests.
@@ -30,19 +33,19 @@ Represents a user's interaction period. It tracks which tests the user has seen 
 ## Assignment & Logic
 
 ### Participation
-The act of a subject entering a test and being assigned a variation. This logic handles:
+The act of a visitor entering a test and being assigned a variation. This logic handles:
 *   **Stickiness**: Returning the same variation if the user has already participated.
 *   **Exclusion**: Checking if the user matches specific filters.
 *   **Queueing**: Determining which test to show if multiple tests exist for a section.
 
 ### Filter
-A rule set used to include or exclude subjects from a test based on their attributes (e.g., "Country is US", "Device is Mobile").
+A rule set used to include or exclude visitors from a test based on their attributes (e.g., "Country is US", "Device is Mobile").
 
 ### Queue
-A mechanism (stored in Redis/Valkey) that orders tests for a specific `subject_id` and `section_id`. This ensures users don't get enrolled in conflicting tests simultaneously.
+A mechanism (stored in Redis/Valkey) that orders tests for a specific `project_id` and `section_id`. This ensures users don't get enrolled in conflicting tests simultaneously.
 
 ### SKIP
-A special state indicating that a subject was evaluated for a test but was deliberately skipped (e.g., due to filters or random sampling), preventing them from being re-evaluated for that specific test instance.
+A special state indicating that a visitor was evaluated for a test but was deliberately skipped (e.g., due to filters or random sampling), preventing them from being re-evaluated for that specific test instance.
 
 ---
 
@@ -55,7 +58,7 @@ A user action recorded during a test (e.g., "clicked_button", "purchased").
 A specific type of event that represents a successful outcome for the test.
 
 ### Impression
-A record that a subject viewed a specific variation.
+A record that a visitor viewed a specific variation.
 
 ### Alpha / Beta
 Statistical terms used in the Thompson Sampling algorithm:

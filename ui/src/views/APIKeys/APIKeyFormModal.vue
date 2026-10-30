@@ -23,11 +23,11 @@
         </div>
         <div class="control-group">
             <div class="inner">
-                <label class="control-label">Subject:</label>
+                <label class="control-label">Project:</label>
                 <div class="controls">
                     <div class="field">
-                        <FieldValidation name="subject_id" :value="api_key.subject_id" v-slot="{ error_message }" :validator="validator" :rules="validationRules.subject_id">
-                            <Select fluid v-model="api_key.subject_id" :options="$sessionStore.subject_options" option-label="label" option-value="value" placeholder="Select a subject"/>
+                        <FieldValidation name="project_id" :value="api_key.project_id" v-slot="{ error_message }" :validator="validator" :rules="validationRules.project_id">
+                            <Select fluid v-model="api_key.project_id" :options="$sessionStore.project_options" option-label="label" option-value="value" placeholder="Select a project"/>
                             <FormError :error="error_message"/>
                         </FieldValidation>
                     </div>
@@ -91,7 +91,7 @@ import { useFormValidator, rules } from '@splitty-test/validation';
 const default_api_key = {
     prefix: '',
     name: '',
-    subject_id: '',
+    project_id: '',
     key: '',
     ip_whitelist: [],
     domain_whitelist: [],
@@ -129,8 +129,8 @@ export default defineComponent({
                 name: [
                     rules.required('A unique name is required for this API key')
                 ],
-                subject_id: [
-                    rules.required('A subject is required for this API key')
+                project_id: [
+                    rules.required('A project is required for this API key')
                 ],
                 ip_whitelist: [
                     rules.minLength(1, 'At least one IP address or CIDR range is required'),

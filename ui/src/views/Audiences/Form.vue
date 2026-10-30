@@ -18,11 +18,11 @@
                     <div class="audience-form">
                         <div class="control-group">
                             <div class="inner">
-                                <label class="control-label">Subject:</label>
+                                <label class="control-label">Project:</label>
                                 <div class="controls">
                                     <div class="field">
-                                        <FieldValidation name="subject_id" :value="audience.subject_id" el=".p-select-label" v-slot="{ error_message }" :validator="validator" :rules="validationRules.subject_id">
-                                            <Dropdown fluid v-model="audience.subject_id" :options="$sessionStore.subject_options" option-label="label" option-value="value" placeholder="Select Subject"/>
+                                        <FieldValidation name="project_id" :value="audience.project_id" el=".p-select-label" v-slot="{ error_message }" :validator="validator" :rules="validationRules.project_id">
+                                            <Dropdown fluid v-model="audience.project_id" :options="$sessionStore.project_options" option-label="label" option-value="value" placeholder="Select Project"/>
                                             <FormError :error="error_message"/>
                                         </FieldValidation>
                                     </div>
@@ -83,7 +83,7 @@ const default_audience = {
     id: null as string | null,
     name: '' as string,
     description: '' as string,
-    subject_id: null as string | null,
+    project_id: null as string | null,
     filters: [] as any[]
 };
 
@@ -106,8 +106,8 @@ export default {
                 description: [
                     rules.required('A description is required')
                 ],
-                subject_id: [
-                    rules.required('A subject is required')
+                project_id: [
+                    rules.required('A project is required')
                 ]
             }
         },

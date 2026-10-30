@@ -40,7 +40,7 @@ export async function insert(data: Comment | Comment[]): Promise<Comment | Comme
 			const user = await DB.Users.getById(comment.user_id!);
 
 			sendWebhook('test_comment', {
-				subject_id: test?.subject_id,
+				project_id: test?.project_id,
 				test_id: comment.test_id,
 				comment_id: comment.id,
 				user_id: comment.user_id,

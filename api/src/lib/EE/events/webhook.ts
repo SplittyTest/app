@@ -7,6 +7,7 @@ import { cloneDeep, isEmpty, merge } from 'lodash-es';
 import { asyncForEach } from 'modern-async';
 import { ExpressionBuilder } from 'kysely';
 import { DBStore } from '@/types/schemas';
+import { assertSafeWebhookUrl } from '@/lib/Utils/safeWebhookUrl';
 
 export const webhook = {
 	trigger: 'webhook',
@@ -15,9 +16,10 @@ export const webhook = {
 
 		try {
 			// Get the webhooks
-			const webhooks = (await Cache.get<Webhook[]>('webhooks', async () => {
+			// Cache per project (under db:webhooks:* so webhook changes clear it)
+			const webhooks = (await Cache.get<Webhook[]>(`db:webhooks:byProject:${data.project_id}`, async () => {
 				return await DB.Webhooks.getByFilter((eb: ExpressionBuilder<DBStore, 'webhooks'>) =>
-					eb.and({ subject_id: data.subject_id, active: true }),
+					eb.and({ project_id: data.project_id, active: true }),
 				);
 			})) as Webhook[];
 
@@ -43,12 +45,21 @@ export const webhook = {
 						const cloned_webhook = cloneDeep(webhook);
 						merge(cloned_webhook.body, data);
 
-						const response = await fetch(cloned_webhook.url, {
-							method: cloned_webhook.method || 'POST',
+						// Re-check at send time: DNS for the host may have changed since it was saved
+						const url = await assertSafeWebhookUrl(cloned_webhook.url);
+						const method = cloned_webhook.method || 'POST';
+
+						const response = await fetch(url, {
+							method,
 							headers: {
+								'Content-Type': 'application/json',
 								...cloned_webhook.headers,
 							},
-							body: JSON.stringify(cloned_webhook.body),
+							// GET requests can't carry a body
+							body: method === 'GET' ? undefined : JSON.stringify(cloned_webhook.body),
+							// Don't follow redirects, which could lead to internal addresses
+							redirect: 'manual',
+							signal: AbortSignal.timeout(10000),
 						});
 
 						log.info(

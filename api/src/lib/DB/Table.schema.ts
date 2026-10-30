@@ -8,7 +8,7 @@ import type {
 	Metric,
 	Setting,
 	StatusLog,
-	Subject,
+	Project,
 	Section,
 	Test,
 	TestResult,
@@ -27,7 +27,7 @@ export interface DB {
 	metrics: MetricsTable;
 	settings: SettingsTable;
 	status_logs: StatusLogsTable;
-	subjects: SubjectsTable;
+	projects: ProjectsTable;
 	tests: TestsTable;
 	test_results: TestResultsTable;
 	users: User;
@@ -51,7 +51,7 @@ export type SettingsTable = Setting;
 
 export interface StatusLogsTable extends StatusLog {}
 
-export interface SubjectsTable extends Omit<Subject, 'sections' | 'data'> {
+export interface ProjectsTable extends Omit<Project, 'sections' | 'data'> {
 	data: JSONColumnType<any>;
 	sections: JSONColumnType<Section[]>;
 }

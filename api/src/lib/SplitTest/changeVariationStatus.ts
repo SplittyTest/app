@@ -93,7 +93,7 @@ export async function changeVariationStatus(
 
 			// Send a webhook
 			sendWebhook('variation_status', {
-				subject_id: test.subject_id,
+				project_id: test.project_id,
 				test_id: test.id,
 				variation_id,
 				old_status: variation.status,

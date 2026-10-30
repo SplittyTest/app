@@ -96,7 +96,8 @@ migrator:
     tag: ""
     pullPolicy: IfNotPresent
   # JSON overrides for the first admin user, used only on an empty database.
-  # Default login is admin@splittytest.com / password.
+  # Default login is admin@splittytest.com with a generated password printed in the
+  # migration job's logs (kubectl logs job/<release>-migrate). Set initUser to choose one.
   #   initUser: '{"email":"me@example.com","password":"a-strong-password"}'
   initUser: ""
   backoffLimit: 3

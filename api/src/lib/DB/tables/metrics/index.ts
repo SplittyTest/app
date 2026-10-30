@@ -10,13 +10,13 @@ const table_schema = zMetricSchema;
 // ------------------------------------------------------------
 // START CUSTOM METHODS
 
-// Get a metric by the subject and event_type
-export async function getByEventType(subject_id: string, event_type: string): Promise<Metric | null> {
-	return (await Cache.get(`db:metrics:getByEventType:${subject_id}:${event_type}`, async () => {
+// Get a metric by the project and event_type
+export async function getByEventType(project_id: string, event_type: string): Promise<Metric | null> {
+	return (await Cache.get(`db:metrics:getByEventType:${project_id}:${event_type}`, async () => {
 		return await Store.selectFrom(table_name)
 			.selectAll()
 			.where('event_type', '=', event_type)
-			.where('subject_id', '=', subject_id)
+			.where('project_id', '=', project_id)
 			.executeTakeFirst();
 	})) as Metric | null;
 }

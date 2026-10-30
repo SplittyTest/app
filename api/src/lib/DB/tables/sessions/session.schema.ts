@@ -6,8 +6,8 @@ import dayjs from '@lib/dayjs';
 export const zSessionSchema = z.object({
 	/** The ULID */
 	id: z.ulid(),
-	/** The ID of the subject the session is for */
-	subject_id: z.string().nullish(),
+	/** The ID of the project the session is for */
+	project_id: z.string().nullish(),
 	/** The ULIDs of tests run during the session */
 	test_ids: z.array(z.ulid()).default([]),
 	/** An array of variation IDs the user was served during their session */

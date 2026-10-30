@@ -1,5 +1,5 @@
 import config from 'config';
-import hash from 'hash-it';
+import { hash } from 'hash-it';
 import DB from '@lib/DB';
 import log from '@lib/Logger';
 import dayjs from '@lib/dayjs';

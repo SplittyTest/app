@@ -9,7 +9,7 @@ import { intersection, isNil, merge, pick, sample, some, startsWith, uniq } from
 import { matchAudience } from '@/lib/Utils/matchAudience';
 
 async function getAvailableTestId(
-	subject_id: string,
+	project_id: string,
 	section_id: string,
 	test_id: string | null | undefined,
 	forced_test_exists: Test | undefined,
@@ -18,10 +18,10 @@ async function getAvailableTestId(
 	if (test_id && forced_test_exists) {
 		return test_id;
 	}
-	if (session.test_ids.includes(`SKIP:${subject_id}:${section_id}`)) {
+	if (session.test_ids.includes(`SKIP:${project_id}:${section_id}`)) {
 		return 'SKIP';
 	}
-	return await selectTest(subject_id, section_id);
+	return await selectTest(project_id, section_id);
 }
 
 // Check traffic against the test audience
@@ -52,7 +52,8 @@ async function ignoreTraffic(test_id: string, data: any): Promise<boolean> {
 async function logSessionMetrics(req: Request) {
 	await DB.OLAP.insertSession({
 		id: req.sessionID,
-		subject_id: (req.session as any).subject_id ?? null,
+		// Sessions saved before the Subjects -> Projects rename have no project_id, so fall back to the API key's project
+		project_id: (req.session as any).project_id ?? req.project_id ?? req.user?.project_id ?? null,
 		test_ids: (req.session as any).test_ids ?? [],
 		variation_ids: (req.session as any).variation_ids ?? {},
 		data: (req.session as any).data ?? {},
@@ -61,9 +62,9 @@ async function logSessionMetrics(req: Request) {
 	});
 }
 
-function updateSessionWithSkip(req: Request, session: any, subject_id: string, section_id: string) {
+function updateSessionWithSkip(req: Request, session: any, project_id: string, section_id: string) {
 	const new_session = merge({}, session);
-	new_session.test_ids = uniq(session.test_ids.concat([`SKIP:${subject_id}:${section_id}`]));
+	new_session.test_ids = uniq(session.test_ids.concat([`SKIP:${project_id}:${section_id}`]));
 	merge(req.session, new_session);
 }
 
@@ -76,7 +77,7 @@ function updateSessionWithVariation(req: Request, session: any, test_id: string,
 
 export async function participate(req: Request, res: Response, next: NextFunction): Promise<void> {
 	let params;
-	// Get a test that matches the subject and section
+	// Get a test that matches the project and section
 	try {
 		params = await zSplitTestParams.parseAsync(req.body);
 	} catch (err) {
@@ -84,21 +85,27 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 		throw err;
 	}
 
-	let { section_id, test_id, variation_id, data, ignore } = params;
-	const subject_id = req.subject_id || req.user?.subject_id;
-	let available_tests: string[] = await DB.Dict.lrange(`tests:queue:${subject_id}:${section_id}`, 0, -1);
+	const { section_id, variation_id, data, ignore } = params;
+	let { test_id } = params;
+	const project_id = req.project_id || req.user?.project_id;
+	let available_tests: string[] = await DB.Dict.lrange(`tests:queue:${project_id}:${section_id}`, 0, -1);
 
 	// DEBUG LOG
 	log.debug(
-		`Participate: ${subject_id}:${section_id} -> Queue Length: ${available_tests.length} | Items: ${JSON.stringify(available_tests)}`,
+		`Participate: ${project_id}:${section_id} -> Queue Length: ${available_tests.length} | Items: ${JSON.stringify(available_tests)}`,
 	);
 
 	// Get a specific test (even if it is not active)
 	let forced_test_exists: Test | undefined;
 	if (test_id) {
 		forced_test_exists = (await DB.Tests.getById(test_id)) || undefined;
+		// An API key can only force tests that belong to its own project
+		if (forced_test_exists && forced_test_exists.project_id !== project_id) {
+			forced_test_exists = undefined;
+			test_id = undefined;
+		}
 		if (forced_test_exists) {
-			available_tests = [test_id];
+			available_tests = [forced_test_exists.id];
 		}
 	}
 
@@ -110,6 +117,13 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 
 	// 1. Force return a specific test variation
 	if (variation_id) {
+		// An API key can only preview variations of tests that belong to its own project
+		const [variation_test_id] = variation_id.split('-');
+		const variation_test = await DB.Tests.getById(variation_test_id);
+		if (!variation_test || variation_test.project_id !== project_id) {
+			res.status(204).send();
+			return;
+		}
 		const variation = await Cache.get(`variations:${variation_id}`, async () => {
 			return await getTestVariationById(variation_id as string);
 		});
@@ -139,7 +153,7 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 	}
 
 	// 3. Select a new test
-	const selected_test_id = await getAvailableTestId(subject_id!, section_id, test_id, forced_test_exists, session);
+	const selected_test_id = await getAvailableTestId(project_id!, section_id, test_id, forced_test_exists, session);
 
 	if (!selected_test_id) {
 		// No test selected
@@ -159,7 +173,7 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 	if (selected_test_id === 'SKIP') {
 		log.debug(
 			{
-				subject_id,
+				project_id,
 				section_id,
 				session_id: session.id,
 			},
@@ -167,7 +181,7 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 		);
 
 		if (!ignore) {
-			updateSessionWithSkip(req, session, subject_id!, section_id);
+			updateSessionWithSkip(req, session, project_id!, section_id);
 			await logSessionMetrics(req);
 		}
 		res.status(200).json({ test_id: null, variation: null, session_id: req.sessionID });
@@ -178,7 +192,7 @@ export async function participate(req: Request, res: Response, next: NextFunctio
 	const variation = await selectTestVariation(selected_test_id, session);
 
 	log.debug('Variation selected for test', {
-		subject_id,
+		project_id,
 		section_id,
 		test_id: selected_test_id,
 		variation_id: variation.id,

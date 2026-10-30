@@ -13,22 +13,22 @@ export async function removeTestFromQueue(test_id: string) {
 	}
 
 	// Remove all values with the given test_id from the queue
-	await DB.Dict.lrem(`tests:queue:${test.subject_id}:${test.section_id}`, 999, test_id);
+	await DB.Dict.lrem(`tests:queue:${test.project_id}:${test.section_id}`, 999, test_id);
 
 	// Check if anything other than SKIPs remain
-	const remaining_queue_items = await DB.Dict.lrange(`tests:queue:${test.subject_id}:${test.section_id}`, 0, -1);
+	const remaining_queue_items = await DB.Dict.lrange(`tests:queue:${test.project_id}:${test.section_id}`, 0, -1);
 	if (
 		remaining_queue_items.every((item) => {
 			return item === 'SKIP';
 		})
 	) {
-		await DB.Dict.del(`tests:queue:${test.subject_id}:${test.section_id}`);
+		await DB.Dict.del(`tests:queue:${test.project_id}:${test.section_id}`);
 	}
 
 	log.info(
 		{
 			test_id,
-			subject_id: test.subject_id,
+			project_id: test.project_id,
 			section_id: test.section_id,
 			weight: test.weight,
 		},

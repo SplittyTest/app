@@ -4,6 +4,9 @@ import { AuthError } from '@/lib/Errors/AuthError';
 import { compareSync } from 'bcrypt';
 import { IVerifyOptions, Strategy as LocalStrategy } from 'passport-local';
 
+// bcrypt hash of a random value, used when the email doesn't match any user
+const DUMMY_HASH = '$2b$12$magmefwJvT8P0gs6M82CkuqBM/CmEOA1yjLhjUH2i.Cl3pUlOntme';
+
 async function verify(
 	username: string,
 	password: string,
@@ -22,10 +25,12 @@ async function verify(
 		// Get the user by email address
 		const user = await DB.Users.getByEmail(username);
 
+		// Always run a bcrypt comparison so response time doesn't reveal whether the email exists
+		const valid_password = compareSync(String(password), user?.password || DUMMY_HASH);
+
 		if (user) {
-			// Verify the password
-			const valid_password = compareSync(password, user?.password);
-			if (!valid_password) {
+			// Verify the password, and only allow active accounts to sign in
+			if (!valid_password || user.status !== 'active') {
 				throw new AuthError('Invalid user or password', {
 					logout: true,
 				});
@@ -45,8 +50,7 @@ async function verify(
 	} catch (err) {
 		log.child({
 			email: username,
-			err,
-		}).info('Not found in DB');
+		}).info('Login failed');
 		callback(err);
 	}
 }

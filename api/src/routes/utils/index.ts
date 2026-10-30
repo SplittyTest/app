@@ -3,6 +3,7 @@ import config from 'config';
 import { Router } from 'express';
 import { includes } from 'lodash-es';
 import multer from 'multer';
+import crypto from 'node:crypto';
 
 // ------------------------------------------------------------
 // STORAGE CONFIGURATION
@@ -18,7 +19,9 @@ if (storage_type === 'local') {
 			cb(null, storage_config.folder);
 		},
 		filename: function (req, file, cb) {
-			cb(null, file.originalname);
+			// Never trust the client's filename (it could contain "../" or overwrite other files)
+			const extensions: Record<string, string> = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif' };
+			cb(null, `${crypto.randomUUID()}${extensions[file.mimetype] ?? ''}`);
 		},
 	});
 } else if (storage_type === 's3') {

@@ -7,7 +7,7 @@ import { zMetricSchema, Metric } from '@/lib/DB/tables/metrics/metric.schema';
 import { zSessionSchema, Session } from '@lib/DB/tables/sessions/session.schema';
 import { zSettingSchema, Setting } from '@lib/DB/tables/settings/setting.schema';
 import { zStatusLogSchema, StatusLog } from '@lib/DB/tables/status_logs/status_log.schema';
-import { zSubjectSchema, Subject, zSectionSchema, Section } from '@lib/DB/tables/subjects/subject.schema';
+import { zProjectSchema, Project, zSectionSchema, Section } from '@lib/DB/tables/projects/project.schema';
 import {
 	zTestSchema,
 	Test,
@@ -36,7 +36,7 @@ export {
 	zSessionSchema,
 	zSettingSchema,
 	zStatusLogSchema,
-	zSubjectSchema,
+	zProjectSchema,
 	zTestSchema,
 	zTestFilters,
 	zTestResultSchema,
@@ -53,7 +53,7 @@ export {
 	Section,
 	Session,
 	Setting,
-	Subject,
+	Project,
 	Test,
 	ExpandedTest,
 	TestFilters,

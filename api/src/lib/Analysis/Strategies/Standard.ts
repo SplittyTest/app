@@ -2,7 +2,7 @@ import { AnalysisStrategy } from '../Strategy';
 import { Session, Test, Variation } from '@/types/schemas';
 import DB from '@/lib/DB';
 import { ExperimentError } from '@/lib/Errors/ExperimentError';
-import hash from 'hash-it';
+import { hash } from 'hash-it';
 import { isNil, sortBy } from 'lodash-es';
 import { SplitTestResult } from '@/lib/SplitTest/calculateScores';
 import { hasConfidence } from '@/lib/Utils/stats';

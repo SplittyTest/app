@@ -10,7 +10,7 @@ import fs from 'fs';
 describe('Ambient Mode', () => {
     let sim: TestSimulation;
     let test_id: string;
-    let subject_id = 'jest_subject';
+    let project_id = 'jest_project';
     let section_id = 'main';
     let user_id = ulid();
     const tempDbPath = path.resolve(__dirname, `ambient_${ulid()}.db`);
@@ -37,7 +37,7 @@ describe('Ambient Mode', () => {
         ambientTest = {
             id: test_id,
             name: 'Ambient Test',
-            subject_id,
+            project_id,
             section_id,
             status: 'ambient',
             variations: [
@@ -66,13 +66,13 @@ describe('Ambient Mode', () => {
         } as unknown as Test;
 
         await DB.Tests.insert(ambientTest);
-        await DB.Dict.rpush(`tests:ambient:${subject_id}:${section_id}`, test_id);
+        await DB.Dict.rpush(`tests:ambient:${project_id}:${section_id}`, test_id);
     });
 
     afterAll(async () => {
         if (sim) await sim.stop();
         await DB.Tests.deleteById(test_id);
-        await DB.Dict.del(`tests:ambient:${subject_id}:${section_id}`);
+        await DB.Dict.del(`tests:ambient:${project_id}:${section_id}`);
         await DB.Store.destroy();
         if (DB.Dict.client?.isOpen) await DB.Dict.disconnect();
         // Also disconnect Metrics if possible?
@@ -95,7 +95,7 @@ describe('Ambient Mode', () => {
                 'Authorization': `API-Key ${(sim as any).fullApiKey}`
             },
             body: JSON.stringify({
-                subject_id,
+                project_id,
                 section_id
             })
         });

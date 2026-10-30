@@ -23,11 +23,11 @@
         </div>
         <div class="control-group">
             <div class="inner">
-                <label class="control-label">Subject ID:</label>
+                <label class="control-label">Project ID:</label>
                 <div class="controls">
                     <div class="field">
-                        <FieldValidation name="subject_id" :value="webhook.subject_id" v-slot="{ error_message }" :validator="validator" :rules="validationRules.subject_id">
-                            <Select fluid v-model="webhook.subject_id" :options="$sessionStore.subject_options" option-label="label" option-value="value" placeholder="Select a subject"/>
+                        <FieldValidation name="project_id" :value="webhook.project_id" v-slot="{ error_message }" :validator="validator" :rules="validationRules.project_id">
+                            <Select fluid v-model="webhook.project_id" :options="$sessionStore.project_options" option-label="label" option-value="value" placeholder="Select a project"/>
                             <FormError :error="error_message"/>
                         </FieldValidation>
                     </div>
@@ -160,7 +160,7 @@ import { useFormValidator, rules } from '@splitty-test/validation';
 
 const default_webhook = {
     name: '',
-    subject_id: null,
+    project_id: null,
     events: [],
     url: 'https://',
     method: 'POST',

@@ -1,9 +1,11 @@
 import { requireRole } from '@/lib/Auth';
+import { destroyUserSessions } from '@/lib/Auth/security';
 import DB from '@lib/DB';
 import Cache from '@lib/Cache';
 import { Router } from 'express';
 import { AuthError } from '@/lib/Errors/AuthError';
 import { compareSync } from 'bcrypt';
+import { omit, pick } from 'lodash-es';
 
 export default function (router: Router) {
 	router
@@ -73,39 +75,50 @@ export default function (router: Router) {
 			}
 
 			const user = await DB.Users.getById(req.params.id);
-			return res.status(200).json(user);
+			return res.status(200).json(user ? omit(user, ['password']) : null);
 		})
 
 		// Update a user
 		.patch(requireRole('viewer'), async (req, res) => {
-			if (req.user?.role !== 'admin' && req.params.id !== req.user?.id) {
+			const is_admin = req.user?.role === 'admin';
+			const is_self = req.params.id === req.user?.id;
+			if (!is_admin && !is_self) {
 				throw new AuthError("You don't have the required permissions to do that");
 			}
 
-			// Check if the user is trying to update their own record
-			if (req.params.id === req.user?.id) {
-				// If they are, prevent them from changing their role to something other than admin
-				if (req.user.role === 'admin' && req.body.user.role !== 'admin') {
-					delete req.body.user.role;
-				}
+			const input = { ...(req.body?.user ?? {}) };
 
-				// Check if they are changing their password
-				if (req.body.user.password) {
-					// Check if the old password matches the current password
-					const current_user = await DB.Users.getById(req.user.id);
-					if (current_user && current_user.password) {
-						if (!compareSync(req.body.user.old_password, current_user?.password)) {
-							throw new AuthError('The current password was incorrect');
-						}
+			// Only these fields can ever be changed through this endpoint
+			const allowed_fields = is_admin
+				? ['first_name', 'last_name', 'email', 'phone', 'password', 'role', 'status', 'mfa']
+				: ['first_name', 'last_name', 'email', 'phone', 'password', 'mfa'];
+			const update: Record<string, any> = pick(input, allowed_fields);
+
+			if (is_self) {
+				// Admins can't demote or suspend themselves (prevents locking everyone out)
+				delete update.role;
+				delete update.status;
+
+				// Changing your own password requires the current password
+				if (update.password) {
+					const current_user = await DB.Users.getById(req.user!.id);
+					if (
+						!current_user?.password ||
+						typeof input.old_password !== 'string' ||
+						!compareSync(input.old_password, current_user.password)
+					) {
+						throw new AuthError('The current password was incorrect');
 					}
-
-					// If it does, allow the password change to proceed, but delete the old_password field from the request body
-					delete req.body.user.old_password;
 				}
 			}
 
-			const result = await DB.Users.updateById(req.params.id, req.body.user);
-			res.status(200).json(result);
+			const result = await DB.Users.updateById(req.params.id, update);
+
+			// A password change signs the user out of their other sessions (or all of them, if an admin changed it)
+			if (result && update.password) {
+				await destroyUserSessions(req.params.id, is_self ? req.sessionID : undefined);
+			}
+			res.status(200).json(result ? omit(result, ['password']) : null);
 		})
 
 		// Delete a user
@@ -114,6 +127,6 @@ export default function (router: Router) {
 				throw new AuthError("You can't delete your own user");
 			}
 			const result = await DB.Users.deleteById(req.params.id);
-			res.status(200).json(result);
+			res.status(200).json(result ? omit(result, ['password']) : null);
 		});
 }

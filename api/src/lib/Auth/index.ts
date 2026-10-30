@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
 import DB from '@lib/DB';
-import { omit } from 'lodash-es';
-import log from '@lib/Logger';
-import passport from 'passport';
 import { getPrefix, prefix } from '@lib/DB/tables/api_keys/api_key.schema';
+import log from '@lib/Logger';
+import { NextFunction, Response } from 'express';
+import { omit } from 'lodash-es';
+import passport from 'passport';
 
 const PassportAuth = passport;
 
@@ -21,19 +21,25 @@ PassportAuth.deserializeUser(async (user_id: string, callback) => {
 			const api_key_prefix = getPrefix(user_id);
 			const api_key = await DB.APIKeys.getByPrefix(api_key_prefix);
 
-			if (!api_key) {
-				return callback(new Error('API Key not found'));
+			// Sessions created with a deleted or suspended key stop working right away
+			if (!api_key || api_key.status !== 'active') {
+				return callback(null, false);
 			}
 
 			return callback(null, {
-				id: api_key?.prefix!,
+				id: api_key?.prefix,
 				role: 'api',
-				subject_id: api_key?.subject_id,
+				project_id: api_key?.project_id,
 			});
 		}
 
 		// Get the user by ID
 		const user = await DB.Users.getById(user_id);
+
+		// Deleted, suspended or archived users are signed out on their next request
+		if (!user || (user as any).status !== 'active') {
+			return callback(null, false);
+		}
 		const safe_user = omit(user, ['password']);
 		callback(null, safe_user);
 	} catch (err) {

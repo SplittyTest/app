@@ -10,8 +10,8 @@ export const zEventSchema = z.object({
 	type: z.string().regex(/^[a-z0-9_]+$/),
 	/** The ULID of the session that triggered this event (or create a new one) */
 	session_id: z.ulid(),
-	/** The ID of the subject this session is for */
-	subject_id: z.string(),
+	/** The ID of the project this session is for */
+	project_id: z.string(),
 	/** An array of test_ids that the user participated in during this session at the time the event was triggered */
 	test_ids: z.array(z.ulid()),
 	/** An array of variation IDs the user was served during their session */

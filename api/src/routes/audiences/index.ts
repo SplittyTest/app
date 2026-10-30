@@ -9,14 +9,14 @@ export default function (router: Router) {
 
 		// Get the list of audiences
 		.get(requireRole('viewer'), async (req, res) => {
-			let audiences: Audience[] = [];
-			if (req.query.filter && req.query.filter.subject_id) {
+			let audiences: Audience[];
+			if (req.query.filter && req.query.filter.project_id) {
 				audiences = await DB.Audiences.getByFilter(
 					(eb: any) =>
 						eb.and({
-							subject_id: req.query.filter.subject_id,
+							project_id: req.query.filter.project_id,
 						}),
-					req.query.filter.subject_id,
+					req.query.filter.project_id,
 				);
 			} else {
 				audiences = await DB.Audiences.getAll();

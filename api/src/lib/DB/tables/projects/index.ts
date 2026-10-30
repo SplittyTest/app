@@ -1,7 +1,7 @@
 import { generateCrud } from '@lib/Utils/generateCrud';
-import { Subject, zSubjectSchema } from './subject.schema';
+import { Project, zProjectSchema } from './project.schema';
 import { isPlainObject, isUndefined } from 'lodash-es';
-import { deleteBySubjectId as deleteTestsBySubjectId } from '../tests';
+import { deleteByProjectId as deleteTestsByProjectId } from '../tests';
 import log from '@lib/Logger';
 import Cache from '@lib/Cache';
 import Store from '@lib/DB/Store';
@@ -9,20 +9,20 @@ import { sql } from 'kysely';
 import isArrayWithLength from '@/lib/Utils/isArrayWithLength';
 import { asyncForEach } from 'modern-async';
 
-const table_name = 'subjects';
-const table_schema = zSubjectSchema;
+const table_name = 'projects';
+const table_schema = zProjectSchema;
 
 // ------------------------------------------------------------
 // START CUSTOM METHODS
 
-// Get subjects for the list page
+// Get projects for the list page
 export async function getList() {
 	return (await Cache.get(`db:${table_name}:getList`, async () => {
-		const subjects = await Store.with('test_counts', (db) =>
+		const projects = await Store.with('test_counts', (db) =>
 			db
 				.selectFrom('tests')
 				.select((eb) => [
-					'subject_id',
+					'project_id',
 					sql<number>`SUM(CASE WHEN ${eb.ref('status')} = 'active' OR ${eb.ref('status')} = 'paused' THEN 1 ELSE 0 END)`.as(
 						'active_tests',
 					),
@@ -30,17 +30,17 @@ export async function getList() {
 					sql<number>`SUM(CASE WHEN ${eb.ref('status')} = 'complete' THEN 1 ELSE 0 END)`.as('complete_tests'),
 				])
 				.where('status', 'in', ['active', 'pending', 'complete'])
-				.groupBy('subject_id'),
+				.groupBy('project_id'),
 		)
-			.selectFrom('subjects')
-			.leftJoin('test_counts', 'test_counts.subject_id', 'subjects.id')
+			.selectFrom('projects')
+			.leftJoin('test_counts', 'test_counts.project_id', 'projects.id')
 			.select([
-				'subjects.id as id',
-				'subjects.name as name',
-				'subjects.type as type',
-				'subjects.description as description',
-				'subjects.testing_enabled as testing_enabled',
-				'subjects.sections as sections',
+				'projects.id as id',
+				'projects.name as name',
+				'projects.type as type',
+				'projects.description as description',
+				'projects.testing_enabled as testing_enabled',
+				'projects.sections as sections',
 				sql`COALESCE(test_counts.active_tests, 0)`.as('active_tests'),
 				sql`COALESCE(test_counts.pending_tests, 0)`.as('pending_tests'),
 				sql`COALESCE(test_counts.complete_tests, 0)`.as('complete_tests'),
@@ -48,11 +48,11 @@ export async function getList() {
 			.$assertType<any>()
 			.execute();
 
-		return subjects || null;
-	})) as Subject[];
+		return projects || null;
+	})) as Project[];
 }
 
-// Custom method to delete a subject by ID
+// Custom method to delete a project by ID
 export async function deleteById(id: string, filter?: any) {
 	// Delete all alerts, status_logs, and watchers for the test
 	let query: any = Store.deleteFrom(table_name).where('id', '=', id);
@@ -67,7 +67,7 @@ export async function deleteById(id: string, filter?: any) {
 		const delete_result = await query.executeTakeFirst();
 		if (delete_result && delete_result.id) {
 			// Delete all alerts, status_logs, and watchers for the test
-			await deleteTestsBySubjectId(id);
+			await deleteTestsByProjectId(id);
 		}
 		return delete_result;
 	});
@@ -78,14 +78,14 @@ export async function deleteById(id: string, filter?: any) {
 	return result;
 }
 
-// Custom method to delete subjects by filter
+// Custom method to delete projects by filter
 export async function deleteByFilter(filter: any) {
-	const subjects = await Store.selectFrom(table_name).select('id').where(filter).execute();
-	if (isArrayWithLength(subjects)) {
+	const projects = await Store.selectFrom(table_name).select('id').where(filter).execute();
+	if (isArrayWithLength(projects)) {
 		await asyncForEach(
-			subjects,
-			async (subject) => {
-				await deleteById(subject.id);
+			projects,
+			async (project) => {
+				await deleteById(project.id);
 			},
 			20,
 		);
@@ -94,14 +94,14 @@ export async function deleteByFilter(filter: any) {
 	// Clean any cache keys
 	await Cache.clean(`db:${table_name}:*`);
 
-	return subjects;
+	return projects;
 }
 
 // END CUSTOM METHODS
 // ------------------------------------------------------------
 
 // Generate the default crud routes
-const { getById, getByFilter, getAll, insert, updateById, updateByFilter } = generateCrud<Subject>(
+const { getById, getByFilter, getAll, insert, updateById, updateByFilter } = generateCrud<Project>(
 	table_name,
 	table_schema,
 	{

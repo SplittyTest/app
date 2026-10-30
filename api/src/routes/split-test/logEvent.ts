@@ -25,7 +25,7 @@ export async function logEvent(req: Request, res: Response, next: NextFunction):
 		id: ulid(),
 		session_id: session.id,
 		type: req.body.type,
-		subject_id: req.subject_id || req.user?.subject_id,
+		project_id: req.project_id || req.user?.project_id,
 		test_ids: session.test_ids || [],
 		variation_ids: session.variation_ids || [],
 		value: req.body.value,
@@ -51,17 +51,17 @@ export async function logEvent(req: Request, res: Response, next: NextFunction):
 	if (req.session && !session.filtered_ip) {
 		log.trace('Traffic not filtered');
 
-		// Get the subject settings to determine if we should log unknown events
+		// Get the project settings to determine if we should log unknown events
 		// This is cached at the class level
-		const subject = await DB.Subjects.getById(raw_event.subject_id);
-		const subject_settings = subject?.settings || {};
+		const project = await DB.Projects.getById(raw_event.project_id);
+		const project_settings = project?.settings || {};
 
 		// Check if the user has participated in any tests
 		const is_participant = isArrayWithLength(event.test_ids);
 
 		// Check if there is a metric defined for this event type
 		// This is cached at the class level
-		const metric = await DB.Metrics.getByEventType(raw_event.subject_id, raw_event.type);
+		const metric = await DB.Metrics.getByEventType(raw_event.project_id, raw_event.type);
 		let is_tracked_metric = false;
 		let is_known_metric = false;
 		if (metric) {
@@ -78,12 +78,12 @@ export async function logEvent(req: Request, res: Response, next: NextFunction):
 		let log_event = true;
 
 		// The the event is unknown and we do not want to log unknown events, do not log the event
-		if (!is_known_metric && !subject_settings.log_unknown_events) {
+		if (!is_known_metric && !project_settings.log_unknown_events) {
 			log_event = false;
 		}
 
 		// If the event is untracked and we do not want to log untracked events, do not log the event
-		if (log_event && !is_tracked_metric && !subject_settings.log_untracked_events) {
+		if (log_event && !is_tracked_metric && !project_settings.log_untracked_events) {
 			log_event = false;
 		}
 
@@ -92,7 +92,7 @@ export async function logEvent(req: Request, res: Response, next: NextFunction):
 			// ...and it is an unknown event
 			if (!is_known_metric) {
 				// ...and we do not want to log unknown events for non-participants
-				if (!subject_settings.unknown_events_idle_logging) {
+				if (!project_settings.unknown_events_idle_logging) {
 					log_event = false;
 				}
 
@@ -102,9 +102,9 @@ export async function logEvent(req: Request, res: Response, next: NextFunction):
 					set(
 						req.session,
 						'data.$unknown_event_sample_rate',
-						subject_settings.unknown_events_idle_logging_percentage,
+						project_settings.unknown_events_idle_logging_percentage,
 					);
-					if (Math.random() > (subject_settings.unknown_events_idle_logging_percentage || 0)) {
+					if (Math.random() > (project_settings.unknown_events_idle_logging_percentage || 0)) {
 						log_event = false;
 					}
 				}

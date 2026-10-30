@@ -5,7 +5,7 @@ declare global {
 		export interface User {
 			id: string;
 			role: string;
-			subject_id?: string;
+			project_id?: string;
 		}
 
 		export interface Request {
@@ -23,7 +23,7 @@ declare global {
 				filter?: any;
 			};
 			session?: Session;
-			subject_id?: string;
+			project_id?: string;
 			user?: User;
 			sessionID: string;
 		}
@@ -36,7 +36,7 @@ declare module 'express-session' {
 		passport: {
 			user?: Partial<SchemaUser>;
 		};
-		subject_id?: string;
+		project_id?: string;
 		test_ids: string[];
 		user_session: Session;
 		[key: string]: any;

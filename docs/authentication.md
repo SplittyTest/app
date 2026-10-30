@@ -1,18 +1,18 @@
 # API Authentication
 
-Authentication with the Splitty Test API is easy and will require a separate API-key for requests from each subject. You will need a user with at least `Tester` privileges to complete the steps below.
+Authentication with the Splitty Test API is easy and will require a separate API-key for requests from each project. You will need a user with at least `Tester` privileges to complete the steps below.
 
-### Create a Subject
+### Create a Project
 
-In the Splitty Test dashboard, first create a new subject that you will be running tests on. A subject can be a website or application.
+In the Splitty Test dashboard, first create a new project that you will be running tests on. A project can be a website or application.
 
-1. Click on the "Subjects" link in the main menu.
-2. Click the "New Test Subject" button in the upper-right corner.
+1. Click on the "Projects" link in the main menu.
+2. Click the "New Test Project" button in the upper-right corner.
 3. Fill out the form and click the "Save" button.
 
 ### Create an API Key
 
-Once a subject exists, you can create an API key for it. Any requests that are received using that API key will be assigned to the subject the API key is attached to.
+Once a project exists, you can create an API key for it. Any requests that are received using that API key will be assigned to the project the API key is attached to.
 
 1. Click on the "Settings" link in the main menu.
 2. Click on the "API Keys" tab.

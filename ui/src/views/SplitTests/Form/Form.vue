@@ -265,7 +265,7 @@ export default defineComponent({
             test: {
                 id: new_test_ulid,
                 name: '',
-                subject_id: this.$route.params.subject_id || null,
+                project_id: this.$route.params.project_id || null,
                 section_id: null,
                 description: '',
                 preview_url: null as string | null,
@@ -337,7 +337,7 @@ export default defineComponent({
                             detail: 'The test was successfully saved and added to your queued tests',
                             life: 5000
                         });
-                        this.$router.push(`/split-tests/${this.$route.params.subject_id}`);
+                        this.$router.push(`/split-tests/${this.$route.params.project_id}`);
                     }
                 }
                 else {

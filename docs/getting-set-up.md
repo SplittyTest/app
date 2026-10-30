@@ -88,7 +88,7 @@ When the `app` container is running, open [http://localhost:3000](http://localho
 The first migration creates an admin user:
 
 * **Email:** `admin@splittytest.com`
-* **Password:** `password`
+* **Password:** generated during the first migration and printed in its output (for Docker Compose: `docker compose logs migrate-store`). Set `INIT_USER` before the first run to choose your own.
 
 Change this password right after you sign in. You can also choose the first user's details before the first run by setting `INIT_USER` in your `.env` file:
 
@@ -233,7 +233,7 @@ The databases start first, then the migration Job runs. You can follow it with:
 $ kubectl -n splittytest logs -f job/splittytest-migrate
 ```
 
-When it finishes, open your ingress host and sign in as `admin@splittytest.com` with the password `password`. Change the password right away. To choose the first user yourself, set `migrator.initUser` before the first install:
+When it finishes, open your ingress host and sign in as `admin@splittytest.com` with the generated password printed in the migration job's logs (`kubectl logs job/<release>-migrate`). Change the password right away. To choose the first user yourself, set `migrator.initUser` before the first install:
 
 ```yaml
 migrator:

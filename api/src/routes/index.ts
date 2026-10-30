@@ -8,7 +8,7 @@ import experimentRoutes from './split-test';
 import metricsRoutes from './metrics';
 import settingsRoutes from './settings';
 import statusLogsRoutes from './status_logs';
-import subjectsRoutes from './subjects';
+import projectsRoutes from './projects';
 import testsRoutes from './tests';
 import usersRoutes from './users';
 import watchersRoutes from './watchers';
@@ -23,7 +23,7 @@ export async function apiRoutes(router: Router) {
 	metricsRoutes(router);
 	settingsRoutes(router);
 	statusLogsRoutes(router);
-	subjectsRoutes(router);
+	projectsRoutes(router);
 	testsRoutes(router);
 	usersRoutes(router);
 	watchersRoutes(router);

@@ -4,7 +4,7 @@
             <div class="page-icon bg-brand">
                 <Icon type="Devices" color="white" size="28px"/>
             </div>
-            <h1>{{ isNew ? 'New Subject' : 'Edit Subject' }}</h1>
+            <h1>{{ isNew ? 'New Project' : 'Edit Project' }}</h1>
         </hgroup>
         <div class="page-content">
             <div class="test-form basis-full">
@@ -33,11 +33,11 @@
                                     <AccordionPanel value="details">
                                         <AccordionHeader>
                                             <div class="section-heading">
-                                                Subject Details
+                                                Project Details
                                             </div>
                                         </AccordionHeader>
                                         <AccordionContent>
-                                            <Details :subject="subject" :validator="validator" />
+                                            <Details :project="project" :validator="validator" />
                                         </AccordionContent>
                                     </AccordionPanel>
                                     <AccordionPanel value="sections">
@@ -47,7 +47,7 @@
                                             </div>
                                         </AccordionHeader>
                                         <AccordionContent>
-                                            <Sections :subject="subject" :validator="validator" />
+                                            <Sections :project="project" :validator="validator" />
                                         </AccordionContent>
                                     </AccordionPanel>
                                     <AccordionPanel value="settings" class="border-b-0">
@@ -57,7 +57,7 @@
                                             </div>
                                         </AccordionHeader>
                                         <AccordionContent>
-                                            <Settings :subject="subject" :validator="validator" />
+                                            <Settings :project="project" :validator="validator" />
                                         </AccordionContent>
                                     </AccordionPanel>
                                 </Accordion>
@@ -68,7 +68,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <template v-if="!isNew">
-                                    <Button label="Duplicate This Subject" @click="duplicateSubject()">
+                                    <Button label="Duplicate This Project" @click="duplicateProject()">
                                         <template #icon>
                                             <Icon type="Content Copy" color="white" size="18px"/>
                                         </template>
@@ -76,8 +76,8 @@
                                 </template>
                             </div>
                             <div class="inline-flex items-center gap-2">
-                                <Button text severity="secondary" @click="$router.push('/subjects')">Cancel</Button>
-                                <Button label="Save Subject" @click="saveSubject()">
+                                <Button text severity="secondary" @click="$router.push('/projects')">Cancel</Button>
+                                <Button label="Save Project" @click="saveProject()">
                                     <template #icon>
                                         <Icon type="Check" size="20px"/>
                                     </template>
@@ -114,7 +114,7 @@ import { hash } from 'hash-it';
 import { useConfirm } from 'primevue/useconfirm';
 
 export default defineComponent({
-    name: 'SubjectForm',
+    name: 'ProjectForm',
     components: {
         Details,
         Sections,
@@ -123,7 +123,7 @@ export default defineComponent({
     data() {
         return {
             current_section: 'details',
-            subject: {
+            project: {
                 id: null as string | null,
                 name: '',
                 type: 'website',
@@ -169,10 +169,10 @@ export default defineComponent({
     },
     computed: {
         isNew() {
-            return !this.$route.params.subject_id;
+            return !this.$route.params.project_id;
         },  
         isArchivable() {
-            // A subject is archivable if it has no active tests with start times
+            // A project is archivable if it has no active tests with start times
             if (Array.isArray(this.active_tests) && this.active_tests.length > 0) {
                 return false;
             }
@@ -180,9 +180,9 @@ export default defineComponent({
         }  
     },
     methods: {
-        async fetchSubject() {
-            const { data } = await this.$API.get(`/api/subjects/${this.$route.params.subject_id}`);
-            this.subject = defaultsDeep(data, this.subject);
+        async fetchProject() {
+            const { data } = await this.$API.get(`/api/projects/${this.$route.params.project_id}`);
+            this.project = defaultsDeep(data, this.project);
         },
         hasActiveTests(section_id: string | null) {
             if (Array.isArray(this.active_tests)) {
@@ -195,50 +195,50 @@ export default defineComponent({
         openPreview(preview_url: string) {
             window.open(preview_url, '_blank', 'noopener,noreferrer');
         },
-        async saveSubject() {
+        async saveProject() {
             const is_valid = await this.validator.validate();
 
             if (is_valid) {
-                const new_value: Record<string, any> = cloneDeep(this.subject);
+                const new_value: Record<string, any> = cloneDeep(this.project);
 
                 let method = 'post';
-                let url = `/api/subjects`;
+                let url = `/api/projects`;
                 if (!this.isNew) {
                     method = 'patch';
-                    url += `/${this.$route.params.subject_id}`;
+                    url += `/${this.$route.params.project_id}`;
                 }
                 else {
                     new_value.created_at = new Date();
                 }
-                const { status } = await this.$API[method](url, { subject: new_value });
+                const { status } = await this.$API[method](url, { project: new_value });
                 if (status < 300) {
                     this.$toast.add({
                         severity: 'success',
-                        summary: 'Test Subject Saved',
-                        detail: 'The test subject was successfully saved',
+                        summary: 'Test Project Saved',
+                        detail: 'The test project was successfully saved',
                         life: 3000
                     });
-                    this.$router.push('/subjects');
+                    this.$router.push('/projects');
                 }
 
-                this.hash = hash(this.subject);
+                this.hash = hash(this.project);
             }
         },
-        async archiveSubject(event: MouseEvent) {
+        async archiveProject(event: MouseEvent) {
             if (this.isArchivable) {
                 this.$confirm.require({
                     target: event.currentTarget as HTMLElement,
-                    message: 'Are you sure you want to archive this test subject?',
+                    message: 'Are you sure you want to archive this test project?',
                     accept: async () => {
                         try {
-                            await this.$API.patch(`/api/subjects/${this.subject.id}`, { subject: { archived: true } });
+                            await this.$API.patch(`/api/projects/${this.project.id}`, { project: { archived: true } });
                             this.$toast.add({
                                 severity: 'success',
-                                summary: 'Subject Archived',
-                                detail: `The subject named ${this.subject.name} was successfully archived`,
+                                summary: 'Project Archived',
+                                detail: `The project named ${this.project.name} was successfully archived`,
                                 life: 5000
                             });
-                            this.subject.archived = true;
+                            this.project.archived = true;
                         } catch (err) {
                             // Auto handled
                         }
@@ -261,49 +261,49 @@ export default defineComponent({
                 });
             }
         },
-        async unarchiveSubject(event: MouseEvent) {
+        async unarchiveProject(event: MouseEvent) {
             try {
-                await this.$API.patch(`/api/subjects/${this.subject.id}`, { subject: { archived: false } });
+                await this.$API.patch(`/api/projects/${this.project.id}`, { project: { archived: false } });
                 this.$toast.add({
                     severity: 'success',
-                    summary: 'Subject Unarchived',
-                    detail: `The subject named ${this.subject.name} was successfully unarchived`,
+                    summary: 'Project Unarchived',
+                    detail: `The project named ${this.project.name} was successfully unarchived`,
                     life: 5000
                 });
-                this.subject.archived = false;
+                this.project.archived = false;
             } catch (err) {
                 // Auto handled
             }
         },
-        duplicateSubject() {
+        duplicateProject() {
             this.$router.push({
-                name: 'SubjectCreate',
+                name: 'ProjectCreate',
                 query: {
-                    duplicate_subject_id: this.subject.id
+                    duplicate_project_id: this.project.id
                 }
             });
         },
     },
     async beforeMount() {
-        // Get the test subject data
-        if (this.$route.params.subject_id) {
-            this.fetchSubject();
+        // Get the test project data
+        if (this.$route.params.project_id) {
+            this.fetchProject();
         }
         else {
             this.isNew = true;
         }
 
-        // Check if we are duplicating another subject
-        const subject_id = this.$route.params.subject_id || this.$route.query.duplicate_subject_id || null;
-        if (subject_id) {
+        // Check if we are duplicating another project
+        const project_id = this.$route.params.project_id || this.$route.query.duplicate_project_id || null;
+        if (project_id) {
             try {
-                const { data } = await this.$API.get(`/api/subjects/${subject_id}`);
+                const { data } = await this.$API.get(`/api/projects/${project_id}`);
                 if (data) {
-                    this.subject = data;
+                    this.project = data;
     
                     if (this.isNew) {
-                        this.subject.id += '_copy';
-                        this.subject.name += ' (Copy)';
+                        this.project.id += '_copy';
+                        this.project.name += ' (Copy)';
                     }
                 }
             } catch (err) {
@@ -311,18 +311,18 @@ export default defineComponent({
             }
         }
 
-        this.hash = hash(this.subject);
+        this.hash = hash(this.project);
     },
     beforeRouteLeave(to, from, next) {
         const confirm = useConfirm();
 
-        if (hash(this.subject) !== this.hash) {
+        if (hash(this.project) !== this.hash) {
             confirm.require({
                 group: 'confirmation',
                 severity: 'danger',
                 icon: 'Error',
                 header: 'You Have Unsaved Changes',
-                message: 'Some of the subject data has been modified. Are you sure you want to leave? You will lose any changes.',
+                message: 'Some of the project data has been modified. Are you sure you want to leave? You will lose any changes.',
                 acceptProps: {
                     label: 'Leave Without Saving',
                     severity: 'danger'
@@ -384,7 +384,7 @@ export default defineComponent({
     padding: 0 1em ;
 }
 
-:deep(.subject-form-section) {
+:deep(.project-form-section) {
     padding: 1em;
 }
 

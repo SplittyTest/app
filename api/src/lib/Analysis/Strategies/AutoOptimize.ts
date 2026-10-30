@@ -2,7 +2,7 @@ import { AnalysisStrategy } from '../Strategy';
 import { Session, Test, Variation } from '@/types/schemas';
 import DB from '@/lib/DB';
 import { ExperimentError } from '@/lib/Errors/ExperimentError';
-import hash from 'hash-it';
+import { hash } from 'hash-it';
 import { isNil, sortBy } from 'lodash-es';
 import { SplitTestResult } from '@/lib/SplitTest/calculateScores';
 import isArrayWithLength from '@/lib/Utils/isArrayWithLength';
@@ -34,7 +34,7 @@ export class AutoOptimizeStrategy implements AnalysisStrategy {
 
 		function logStatusChange(variation_id: string, segment: string, mode: string, conversion_rate: number) {
 			sendWebhook('variation_mode', {
-				subject_id: test!.subject_id,
+				project_id: test!.project_id,
 				test_id,
 				variation_id,
 				segment,
@@ -86,7 +86,7 @@ export class AutoOptimizeStrategy implements AnalysisStrategy {
 			const best_performing_variation = sorted_results[0];
 
 			sorted_results.forEach((variation_result_row) => {
-				let mode = 'consideration';
+				let mode: string;
 				const variation_id = variation_result_row.variation_id;
 
 				// Check if the variation is below the pause threshold compared to the best performing variation

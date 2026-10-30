@@ -24,7 +24,7 @@
 								<div class="inner">
 									<div class="controls">
 										<div class="field">
-											<MultiSelect class="w-25" v-model="subject_filter" :show-toggle-all="false" :options="$sessionStore.subject_options" option-label="label" option-value="value" placeholder="Filter by Subject"/>
+											<MultiSelect class="w-25" v-model="project_filter" :show-toggle-all="false" :options="$sessionStore.project_options" option-label="label" option-value="value" placeholder="Filter by Project"/>
 										</div>
 									</div>
 								</div>
@@ -68,9 +68,9 @@
 									<span class="description">{{ metric.description }}</span>
 								</template>
 							</Column>
-							<Column header="Subject" sortable field="subject">
+							<Column header="Project" sortable field="project">
 								<template #body="{data: metric}">
-									{{ metric.subject_name }}
+									{{ metric.project_name }}
 								</template>
 							</Column>
 							<Column header="Event" sortable field="event_type">
@@ -129,16 +129,16 @@ export default defineComponent({
 	data() {
 		return {
 			metrics: [] as any[],
-			subject_filter: [] as any[],
-			subject_options: [] as any[],
+			project_filter: [] as any[],
+			project_options: [] as any[],
 			selected_metric_id: undefined as string | undefined
 		}
 	},
 	computed: {
 		filteredMetrics() {
-			if (this.subject_filter.length === 0) return this.metrics;
+			if (this.project_filter.length === 0) return this.metrics;
 			return this.metrics.filter((metric) => {
-				return this.subject_filter.includes(metric.subject_id);
+				return this.project_filter.includes(metric.project_id);
 			});
 		}
 	},
@@ -147,7 +147,7 @@ export default defineComponent({
 		async getMetrics() {
 			const { data } = await this.$API.get('/api/metrics');
 			this.metrics = data.map((row: any) => {
-				row.subject_name = row.subject_id ? this.$sessionStore.subject_options.find((option: any) => option.value === row.subject_id)?.label : '';
+				row.project_name = row.project_id ? this.$sessionStore.project_options.find((option: any) => option.value === row.project_id)?.label : '';
 				return row;
 			});
 		},

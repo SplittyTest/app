@@ -7,7 +7,7 @@
 				</div>
 				<div class="page-heading">
 					<h1>Split Tests</h1>
-					<div class="font-bold">{{ subject.name }}</div>
+					<div class="font-bold">{{ project.name }}</div>
 				</div>
 			</hgroup>
 			<div v-if="$sessionStore.minRole('tester')" class="flex items-center">
@@ -59,7 +59,7 @@
 					<div class="inner">
 						<div class="controls">
 							<div class="field">
-								<MultiSelect fluid v-model="page_filters.subject_id" :show-toggle-all="false" :options="subjectOptions" option-label="label" option-value="value" multiple clearable show-clear placeholder="Filter by Subject"/>
+								<MultiSelect fluid v-model="page_filters.project_id" :show-toggle-all="false" :options="projectOptions" option-label="label" option-value="value" multiple clearable show-clear placeholder="Filter by Project"/>
 							</div>
 						</div>
 					</div>
@@ -119,9 +119,9 @@
 									<Icon type="Splitscreen" color="white" size="20px"/>
 								</div>
 							</div>
-							<div class="subject">
+							<div class="project">
 								<div class="text-xs text-gray-400 font-bold">Section</div>
-								<div class="subject-id">{{ test.subject_id }}</div>
+								<div class="project-id">{{ test.project_id }}</div>
 								<div class="section-id">{{ test.section_id }}</div>
 							</div>
 							<div class="metric">
@@ -190,9 +190,9 @@
 									<Icon type="Splitscreen" color="white" size="20px"/>
 								</div>
 							</div>
-							<div class="subject">
+							<div class="project">
 								<div class="text-xs text-gray-400 font-bold">Section</div>
-								<div class="subject-id">{{ test.subject_id }}</div>
+								<div class="project-id">{{ test.project_id }}</div>
 								<div class="section-id">{{ test.section_id }}</div>
 							</div>
 							<div class="metric">
@@ -312,9 +312,9 @@
 									<Icon type="Splitscreen" color="white" size="20px"/>
 								</div>
 							</div>
-							<div class="subject">
+							<div class="project">
 								<div class="text-xs text-gray-400 font-bold">Section</div>
-								<div class="subject-id">{{ test.subject_id }}</div>
+								<div class="project-id">{{ test.project_id }}</div>
 								<div class="section-id">{{ test.section_id }}</div>
 							</div>
 							<div class="metric">
@@ -371,6 +371,7 @@
 </template>
 
 <script lang="ts">
+import { escapeHtml } from '@/lib/utils/safeHtml';
 import { defineComponent } from 'vue';
 import { forIn, isEqual, isUndefined, remove, set, sortBy, sumBy, uniqBy } from 'lodash-es';
 import ArchiveToggle from '@/components/ArchiveToggle.vue';
@@ -393,12 +394,12 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			subject: {} as any | null,
+			project: {} as any | null,
 			incomplete_tests: [] as any[],
 			complete_tests: [] as any[],
 			show_archived: false,
 			page_filters: {
-				subject_id: [] as string[],
+				project_id: [] as string[],
 				created_by: [] as string[]
 			},
 			completed_test_filters: {
@@ -453,15 +454,15 @@ export default defineComponent({
 		};
 	},
 	computed: {
-		subjectOptions() {
-			return this.$sessionStore.subject_options;
+		projectOptions() {
+			return this.$sessionStore.project_options;
 		},
 		userOptions() {
 			return this.$sessionStore.user_options;
 		},
 		activeTests() {
 			const filtered_active_tests = this.incomplete_tests.filter((test) => {
-				if (this.page_filters.subject_id.length && !this.page_filters.subject_id.includes(test.subject_id)) {
+				if (this.page_filters.project_id.length && !this.page_filters.project_id.includes(test.project_id)) {
 					return false;
 				}
 				if (this.page_filters.created_by.length && !this.page_filters.created_by.includes(test.created_by)) {
@@ -471,7 +472,7 @@ export default defineComponent({
 			});
 
 			const filtered_paused_tests = this.incomplete_tests.filter((test) => {
-				if (this.page_filters.subject_id.length && !this.page_filters.subject_id.includes(test.subject_id)) {
+				if (this.page_filters.project_id.length && !this.page_filters.project_id.includes(test.project_id)) {
 					return false;
 				}
 				if (this.page_filters.created_by.length && !this.page_filters.created_by.includes(test.created_by)) {
@@ -491,7 +492,7 @@ export default defineComponent({
 		},
 		pendingTests() {
 			return this.incomplete_tests.filter((test) => {
-				if (this.page_filters.subject_id.length && !this.page_filters.subject_id.includes(test.subject_id)) {
+				if (this.page_filters.project_id.length && !this.page_filters.project_id.includes(test.project_id)) {
 					return false;
 				}
 				if (this.page_filters.created_by.length && !this.page_filters.created_by.includes(test.created_by)) {
@@ -502,7 +503,7 @@ export default defineComponent({
 		},
 		completedTests() {
 			return this.complete_tests.filter((test) => {
-				if (this.page_filters.subject_id.length && !this.page_filters.subject_id.includes(test.subject_id)) {
+				if (this.page_filters.project_id.length && !this.page_filters.project_id.includes(test.project_id)) {
 					return false;
 				}
 				if (this.page_filters.created_by.length && !this.page_filters.created_by.includes(test.created_by)) {
@@ -619,7 +620,7 @@ export default defineComponent({
 		},
 		clearPageFilters() {
 			this.page_filters = {
-				subject_id: [],
+				project_id: [],
 				created_by: [],
 			};
 		},
@@ -672,7 +673,7 @@ export default defineComponent({
                 group: 'confirmation' as ConfirmationOptions['group'],
                 severity: 'danger',
                 header: 'Stop Test',
-                message: `Are you sure you want to stop the test <strong>${test.name}</strong>? Once a test has been stopped, it cannot be restarted.`,
+                message: `Are you sure you want to stop the test <strong>${escapeHtml(test.name)}</strong>? Once a test has been stopped, it cannot be restarted.`,
                 acceptProps: {
                     label: 'Stop Test',
                     severity: 'danger'
@@ -742,7 +743,7 @@ export default defineComponent({
                 group: 'confirmation' as ConfirmationOptions['group'],
                 severity: 'danger',
                 header: 'Delete Test',
-                message: `Are you sure you want to delete the test <strong>${test.name}</strong>? This cannot be undone.`,
+                message: `Are you sure you want to delete the test <strong>${escapeHtml(test.name)}</strong>? This cannot be undone.`,
                 acceptProps: {
                     label: 'Delete Test',
                     severity: 'danger'
@@ -774,8 +775,8 @@ export default defineComponent({
 		await this.getTests();
 	},
 	mounted() {
-		if (this.$route.query.subject_id) {
-			this.page_filters.subject_id = [this.$route.query.subject_id as string];
+		if (this.$route.query.project_id) {
+			this.page_filters.project_id = [this.$route.query.project_id as string];
 		}
 	}
 });

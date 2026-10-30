@@ -1,12 +1,12 @@
-import { ClickHouseClientConfigOptions, createClient, ClickHouseClient } from '@clickhouse/client';
-import { isPlainObject, merge } from 'lodash-es';
-import log from '@lib/Logger';
-import { ExpandedTest, Metric, zEventSchema, zSessionSchema } from '@/types/schemas';
-import { asyncForEach, asyncMap } from 'modern-async';
-import { GetMetricSeriesDataParams, OLAPDB, SplitTestQueryResultRow } from '@/types/db';
-import dayjs from '@lib/dayjs';
+import { assertSafeIdentifier } from '@/lib/Utils/assertSafeIdentifier';
 import isArrayWithLength from '@/lib/Utils/isArrayWithLength';
-import { session } from 'passport';
+import { GetMetricSeriesDataParams, OLAPDB, SplitTestQueryResultRow } from '@/types/db';
+import { ExpandedTest, Metric, zEventSchema, zSessionSchema } from '@/types/schemas';
+import { ClickHouseClient, ClickHouseClientConfigOptions, createClient } from '@clickhouse/client';
+import dayjs from '@lib/dayjs';
+import log from '@lib/Logger';
+import { isPlainObject, merge } from 'lodash-es';
+import { asyncForEach, asyncMap } from 'modern-async';
 
 export class ClickHouse implements OLAPDB {
 	client: ClickHouseClient;
@@ -25,6 +25,8 @@ export class ClickHouse implements OLAPDB {
 		const merged_config = merge({}, ch_config, {
 			clickhouse_settings: {
 				date_time_output_format: 'iso',
+				send_progress_in_http_headers: 1,
+			    http_headers_progress_interval_ms: 10000, // Sends a progress ping every 10 seconds
 			},
 		});
 		this.client = createClient(merged_config);
@@ -97,7 +99,7 @@ export class ClickHouse implements OLAPDB {
 			if (Array.isArray(params.segments) && params.segments.length) {
 				params.segments.forEach((segment, index) => {
 					const aliases = ['segment_a', 'segment_b', 'segment_c'];
-					select_fields += `CAST(data.${segment} AS String) AS ${aliases[index]},\n`;
+					select_fields += `CAST(data.${assertSafeIdentifier(segment)} AS String) AS ${aliases[index]},\n`;
 					grouping.push(aliases[index]);
 				});
 
@@ -163,7 +165,7 @@ export class ClickHouse implements OLAPDB {
 			if (Array.isArray(params.segments) && params.segments.length) {
 				params.segments.forEach((segment, index) => {
 					const aliases = ['segment_a', 'segment_b', 'segment_c'];
-					select_fields += `CAST(data.${segment} AS String) AS ${aliases[index]},\n`;
+					select_fields += `CAST(data.${assertSafeIdentifier(segment)} AS String) AS ${aliases[index]},\n`;
 					grouping.push(aliases[index]);
 				});
 
@@ -390,11 +392,13 @@ export class ClickHouse implements OLAPDB {
 		}
 
 		let segment_filters = '';
+		const segment_params: Record<string, string> = {};
 		const clean_segments = segments.filter((s) => s !== '');
 		if (test.data_segments?.length && isArrayWithLength(clean_segments)) {
 			test.data_segments.forEach((prop, index) => {
-				if (segments[index] !== '') {
-					segment_filters += `AND toString(data.${prop}) = '${segments[index]}'\n`;
+				if (segments[index] !== undefined && segments[index] !== '') {
+					segment_filters += `AND toString(data.${assertSafeIdentifier(prop)}) = {segment_${index}: String}\n`;
+					segment_params[`segment_${index}`] = String(segments[index]);
 				}
 			});
 		}
@@ -567,6 +571,7 @@ export class ClickHouse implements OLAPDB {
 				const result = await this.client.query({
 					query: variation_stats_query,
 					query_params: {
+						...segment_params,
 						default_value: metric.default_value,
 						event_type: metric.event_type,
 						expected_decision_metric_rate: test.expected_decision_metric_rate || 0,
@@ -704,10 +709,12 @@ export class ClickHouse implements OLAPDB {
 
 		// Add where clauses for each of the given segments
 		let segment_filters = '';
+		const segment_params: Record<string, string> = {};
 		if (isPlainObject(params.segments)) {
-			Object.entries(params.segments).forEach(([key, value]) => {
-				if (value !== '') {
-					segment_filters += `AND data.${key} = '${value}'\n`;
+			Object.entries(params.segments as Record<string, unknown>).forEach(([key, value], index) => {
+				if (value !== '' && value !== undefined && value !== null) {
+					segment_filters += `AND toString(data.${assertSafeIdentifier(key)}) = {segment_${index}: String}\n`;
+					segment_params[`segment_${index}`] = String(value);
 				}
 			});
 		}
@@ -729,12 +736,12 @@ export class ClickHouse implements OLAPDB {
 			WHERE
 				created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 				AND type = { event_type: String }
-				AND subject_id = { subject_id: String }
+				AND project_id = { project_id: String }
 				${segment_filters}
 		`;
 
 		// Pre-aggregate events based on session_strategy
-		let event_values_group_by = `GROUP BY session_id, data`;
+		let event_values_group_by = 'GROUP BY session_id, data';
 		if (params.group_by === 'variation_id') {
 			event_values_group_by += ', variation_id';
 		} else if (params.group_by === 'test_id') {
@@ -752,7 +759,7 @@ export class ClickHouse implements OLAPDB {
 				WHERE
 					created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 					AND type = { event_type: String }
-					AND subject_id = { subject_id: String }
+					AND project_id = { project_id: String }
 					${segment_filters}
 				${event_values_group_by}
 				ORDER BY ts ASC
@@ -772,7 +779,7 @@ export class ClickHouse implements OLAPDB {
 						WHERE
 							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 							AND type = { event_type: String }
-							AND subject_id = { subject_id: String }
+							AND project_id = { project_id: String }
 							${segment_filters}
 						${event_values_group_by}
 						ORDER BY ts ASC
@@ -791,7 +798,7 @@ export class ClickHouse implements OLAPDB {
 						WHERE
 							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 							AND type = { event_type: String }
-							AND subject_id = { subject_id: String }
+							AND project_id = { project_id: String }
 							${segment_filters}
 						${event_values_group_by}
 						ORDER BY ts ASC
@@ -810,7 +817,7 @@ export class ClickHouse implements OLAPDB {
 						WHERE
 							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 							AND type = { event_type: String }
-							AND subject_id = { subject_id: String }
+							AND project_id = { project_id: String }
 							${segment_filters}
 						${event_values_group_by}
 						ORDER BY ts ASC
@@ -829,7 +836,7 @@ export class ClickHouse implements OLAPDB {
 						WHERE
 							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 							AND type = { event_type: String }
-							AND subject_id = { subject_id: String }
+							AND project_id = { project_id: String }
 							${segment_filters}
 						${event_values_group_by}
 						ORDER BY ts ASC
@@ -848,7 +855,7 @@ export class ClickHouse implements OLAPDB {
 						WHERE
 							created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
 							AND type = { event_type: String }
-							AND subject_id = { subject_id: String }
+							AND project_id = { project_id: String }
 							${segment_filters}
 						${event_values_group_by}
 						ORDER BY ts ASC
@@ -867,7 +874,7 @@ export class ClickHouse implements OLAPDB {
 				FROM ${this.database}.sessions FINAL
 				WHERE
 					created_at BETWEEN { start_date: DateTime } AND { end_date: DateTime }
-					AND subject_id = { subject_id: String }
+					AND project_id = { project_id: String }
 					${segment_filters}
 				${group_by}
 				ORDER BY ts ASC WITH FILL STEP ${fill_interval}
@@ -908,20 +915,22 @@ export class ClickHouse implements OLAPDB {
 			this.client.query({
 				query: total_stats_query,
 				query_params: {
+					...segment_params,
 					event_type: metric.event_type,
 					start_date,
 					end_date,
-					subject_id: metric.subject_id,
+					project_id: metric.project_id,
 				},
 				format: 'JSONEachRow',
 			}),
 			this.client.query({
 				query: metric_series_query,
 				query_params: {
+					...segment_params,
 					event_type: metric.event_type,
 					start_date,
 					end_date,
-					subject_id: metric.subject_id,
+					project_id: metric.project_id,
 				},
 				format: 'JSONEachRow',
 			}),
@@ -952,12 +961,12 @@ export class ClickHouse implements OLAPDB {
 		if (Array.isArray(segments) && segments.length > 0) {
 			segment_fields = segments
 				.map((segment) => {
-					return `data.${segment} AS ${segment}`;
+					return `data.${assertSafeIdentifier(segment)} AS ${assertSafeIdentifier(segment)}`;
 				})
 				.join(',');
 
 			const mapped_segments = segments.map((segment) => {
-				return `data.${segment}`;
+				return `data.${assertSafeIdentifier(segment)}`;
 			});
 			grouping_clause = `GROUP BY ${mapped_segments.join(', ')}`;
 		}
@@ -969,7 +978,7 @@ export class ClickHouse implements OLAPDB {
 			// Get views for each segment
 			const views_query = `
                     SELECT
-                        '${variation.id}' AS variation_id,
+                        { variation_id: String } AS variation_id,
                         ${segment_fields},
                         count(id) AS views,
                         min(created_at)
@@ -994,12 +1003,14 @@ export class ClickHouse implements OLAPDB {
 			// Get events for each segment
 			const full_results = await asyncMap(views_result, async (result_row) => {
 				let segment_filters = '';
+				const segment_params: Record<string, string> = {};
 				if (Array.isArray(segments) && segments.length > 0) {
 					segment_filters =
 						'AND ' +
 						segments
-							?.map((segment) => {
-								return `data.${segment} = '${result_row[segment]}'`;
+							.map((segment, index) => {
+								segment_params[`segment_${index}`] = String(result_row[segment] ?? '');
+								return `toString(data.${assertSafeIdentifier(segment)}) = {segment_${index}: String}`;
 							})
 							.join(' AND ');
 				}
@@ -1011,12 +1022,14 @@ export class ClickHouse implements OLAPDB {
                     FROM events
                     WHERE
                         has(variation_ids, { variation_id: String })
-                        AND type = '${test.decision_metric.event_type}'
+                        AND type = { event_type: String }
                         AND created_at > { min_created_at: DateTime }
                         ${segment_filters}
                 `;
 
 				const events_query_params = {
+					...segment_params,
+					event_type: test.decision_metric.event_type,
 					variation_id: variation.id,
 					min_created_at: dayjs(test.started_at).format('YYYY-MM-DD hh:mm:ss'),
 				};

@@ -4,22 +4,22 @@ import { type Router } from 'express';
 
 export default function (router: Router) {
 	router
-		.route('/subjects')
+		.route('/projects')
 
-		// Get the list of subjects
+		// Get the list of projects
 		.get(requireRole('viewer'), async (req, res) => {
-			const subjects = await DB.Subjects.getList();
-			res.status(200).json(subjects);
+			const projects = await DB.Projects.getList();
+			res.status(200).json(projects);
 		})
 
-		// Insert a subject
+		// Insert a project
 		.post(requireRole('tester'), async (req, res) => {
-			const subject = await DB.Subjects.insert(req.body.subject);
+			const project = await DB.Projects.insert(req.body.project);
 
-			if (subject) {
-				if (Array.isArray(subject)) {
+			if (project) {
+				if (Array.isArray(project)) {
 					return res.status(201).json(
-						subject.map((row) => {
+						project.map((row) => {
 							return {
 								id: row.id,
 							};
@@ -27,7 +27,7 @@ export default function (router: Router) {
 					);
 				} else {
 					return res.status(201).json({
-						id: subject.id,
+						id: project.id,
 					});
 				}
 			}
@@ -35,25 +35,25 @@ export default function (router: Router) {
 		});
 
 	router
-		.route('/subjects/:id')
+		.route('/projects/:id')
 
-		// Get a single subject
+		// Get a single project
 		.get(requireRole('viewer'), async (req, res) => {
-			const subject = await DB.Subjects.getById(req.params.id);
-			res.status(200).json(subject);
+			const project = await DB.Projects.getById(req.params.id);
+			res.status(200).json(project);
 		})
 
-		// Update a subject
+		// Update a project
 		.patch(requireRole('tester'), async (req, res) => {
-			const result = DB.Subjects.updateById(req.params.id, req.body.subject);
+			const result = DB.Projects.updateById(req.params.id, req.body.project);
 			res.status(200).json(result);
 		})
 
-		// Delete a subject
+		// Delete a project
 		.delete(requireRole('tester'), async (req, res) => {
 			const result = await DB.Store.transaction().execute(async (tx) => {
-				await DB.Tests.deleteByFilter((eb: any) => eb('subject_id', '=', req.params.id));
-				return await DB.Subjects.deleteById(req.params.id);
+				await DB.Tests.deleteByFilter((eb: any) => eb('project_id', '=', req.params.id));
+				return await DB.Projects.deleteById(req.params.id);
 			});
 			res.status(200).json(result);
 		});

@@ -10,7 +10,7 @@ async function run() {
 		.createTable('tests')
 		.addColumn('id', 'text', (col: any) => col.primaryKey())
 		.addColumn('name', 'text', (col: any) => col.notNull())
-		.addColumn('subject_id', 'text', (col: any) => col.notNull())
+		.addColumn('project_id', 'text', (col: any) => col.notNull())
 		.addColumn('section_id', 'text', (col: any) => col.notNull())
 		.addColumn('preview_url', 'text')
 		.addColumn('description', 'text')

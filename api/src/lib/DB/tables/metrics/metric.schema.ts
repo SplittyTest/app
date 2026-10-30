@@ -4,8 +4,8 @@ import dayjs from '@lib/dayjs';
 export const zMetricSchema = z.object({
 	/** The unique ID of the metric */
 	id: z.ulid(),
-	/** The unique ID of the subject associated with the metric */
-	subject_id: z.string().regex(/^[a-z0-9_]+$/),
+	/** The unique ID of the project associated with the metric */
+	project_id: z.string().regex(/^[a-z0-9_]+$/),
 	/** A human-readable name for the metric */
 	name: z.string(),
 	/** An optional description of the metric */

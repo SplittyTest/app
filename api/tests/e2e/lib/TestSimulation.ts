@@ -32,7 +32,7 @@ export class TestSimulation {
     private testId: string | null = null;
     private isRunning = false;
     private fullApiKey: string = '';
-    private testingSubject: string = 'jest_subject';
+    private testingProject: string = 'jest_project';
     private driverUser = { id: deriveUserId('st-e2e') }; // Prefix matches setupApiKey below
 
     // Stats
@@ -57,7 +57,7 @@ export class TestSimulation {
 
         // 1. Setup Data
         await this.setupApiKey();
-        await this.setupSubject();
+        await this.setupProject();
 
         // 2. Start Server
         await this.spawnServer();
@@ -81,7 +81,7 @@ export class TestSimulation {
         const body = {
             test: {
                 name: `Jest E2E ${ulid()}`,
-                subject_id: 'jest_subject',
+                project_id: 'jest_project',
                 section_id: 'main',
                 conversion_event: 'signup',
                 variations: this.config.variations.map(v => ({
@@ -171,7 +171,7 @@ export class TestSimulation {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    subject_id: 'jest_subject',
+                    project_id: 'jest_project',
                     section_id: 'main',
                     data: {}
                 })
@@ -267,15 +267,15 @@ export class TestSimulation {
         this.fullApiKey = FULL_KEY;
     }
 
-    private async setupSubject() {
+    private async setupProject() {
         // Delete existing to clear cache
-        await DB.Subjects.deleteById('jest_subject');
-        await DB.Dict.del('tests:queue:jest_subject:main');
+        await DB.Projects.deleteById('jest_project');
+        await DB.Dict.del('tests:queue:jest_project:main');
 
-        await DB.Subjects.insert({
-            id: 'jest_subject',
+        await DB.Projects.insert({
+            id: 'jest_project',
             type: 'website',
-            name: 'Jest Subject',
+            name: 'Jest Project',
             max_concurrent_tests: 10,
             testing_enabled: true,
             sections: [{

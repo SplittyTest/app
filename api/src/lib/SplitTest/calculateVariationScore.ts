@@ -24,21 +24,19 @@ export function calculateVariationScore(
 	const event_value = +(events_row?.event_value || 0); // This is the current calculated sum, avg, etc
 	let filled_event_value = event_value;
 	const event_count = +(events_row?.events || 0);
-	let filled_event_count = event_count;
 	const event_rate = view_count > 0 ? event_count / view_count : 0;
-	let filled_event_rate = event_rate;
 
 	// This is the final number we want
-	let variation_score = 0;
+	let variation_score: number;
 	let numerator = event_value;
-	let filled_variation_score = 0;
+	let filled_variation_score: number;
 	const filled_view_count = Math.max(test.min_views, view_count);
 
 	const missing_view_count = Math.max(test_min_views - view_count, 0);
 	const missing_event_count = Math.max(round(missing_view_count * test.expected_decision_metric_rate), 0);
 
-	filled_event_count = event_count + missing_event_count;
-	filled_event_rate = filled_event_count / test_min_views;
+	const filled_event_count = event_count + missing_event_count;
+	const filled_event_rate = filled_event_count / test_min_views;
 
 	if (!has_min_views) {
 		log.debug(

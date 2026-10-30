@@ -27,8 +27,8 @@ export const zAPIKeySchema = z.object({
 	key: z.string().default(() => generateKey()),
 	/** Name of the key */
 	name: z.string(),
-	/** The ID of the subject this API key is used for (this will be applied to all event data) */
-	subject_id: z.string(),
+	/** The ID of the project this API key is used for (this will be applied to all event data) */
+	project_id: z.string(),
 	/** An array of whitelisted IP addresses or ranges that can send requests with this API key */
 	ip_whitelist: z.array(z.union([z.ipv4(), z.ipv6(), z.cidrv4(), z.cidrv6()])).optional(),
 	/** An array of domains to allow requests from */

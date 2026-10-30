@@ -1,6 +1,7 @@
 import { OLAPDB, SplitTestQueryResultRow } from '@/types/db';
 import { ExpandedTest, Metric, zEventSchema, zSessionSchema } from '@/types/schemas';
 import dayjs from '@lib/dayjs';
+import { assertSafeIdentifier } from '@/lib/Utils/assertSafeIdentifier';
 import log from '@lib/Logger';
 import { Database } from 'duckdb';
 
@@ -49,7 +50,7 @@ export class DuckDB implements OLAPDB {
 		const grouping: string[] = [];
 		segments.forEach((segment, idx) => {
 			const alias = aliases[idx];
-			mapped.push(`COALESCE(CAST(json_extract(data, '$.${segment}') AS VARCHAR), '') AS ${alias}`);
+			mapped.push(`COALESCE(CAST(json_extract(data, '$.${assertSafeIdentifier(segment)}') AS VARCHAR), '') AS ${alias}`);
 			grouping.push(alias);
 		});
 
@@ -173,7 +174,7 @@ export class DuckDB implements OLAPDB {
 				// Views per segment
 				const viewsSql = `
 					SELECT
-						'${variation.id}' AS variation_id,
+						CAST(? AS VARCHAR) AS variation_id,
 						${select},
 						CAST(COUNT(id) AS INTEGER) AS views,
 						MIN(created_at) AS min_created_at
@@ -182,7 +183,8 @@ export class DuckDB implements OLAPDB {
 					${groupBy}
 				`;
 				// Variation id + optional time window param
-				const paramsList: any[] = [variation.id];
+				// First param fills the selected variation_id, second the variation filter
+				const paramsList: any[] = [variation.id, variation.id];
 				if (timeConstraint) paramsList.push(test.rolling_window);
 				const viewRows = await runAll(this.conn, viewsSql, paramsList);
 
@@ -191,7 +193,7 @@ export class DuckDB implements OLAPDB {
 					let segmentFilters = '';
 					if (segments && segments.length) {
 						segmentFilters = segments
-							.map((segment, idx) => `AND CAST(json_extract(data, '$.${segment}') AS VARCHAR) = ?`)
+							.map((segment) => `AND CAST(json_extract(data, '$.${assertSafeIdentifier(segment)}') AS VARCHAR) = ?`)
 							.join(' ');
 					}
 					const strategy = test.decision_metric.strategy === 'rate' ? 'sum' : test.decision_metric.strategy;
@@ -258,9 +260,13 @@ export class DuckDB implements OLAPDB {
 		}
 
 		let segment_filters = '';
+		const segment_params: string[] = [];
 		if (test.data_segments?.length && segments.length > 0) {
 			test.data_segments.forEach((prop, index) => {
-				segment_filters += `AND CAST(json_extract(data, '$.${prop}') AS VARCHAR) = '${segments[index]}'\n`;
+				if (segments[index] !== undefined && segments[index] !== '') {
+					segment_filters += `AND CAST(json_extract(data, '$.${assertSafeIdentifier(prop)}') AS VARCHAR) = ?\n`;
+					segment_params.push(String(segments[index]));
+				}
 			});
 		}
 
@@ -301,16 +307,8 @@ export class DuckDB implements OLAPDB {
                 FROM (${variation_stats_query}) sub
             `;
 
-				const rows = await runAll(this.conn, full_query, [
-					variation.id, // for CASE WHEN type = ?
-					// The order of params is tricky because we construct the SQL string with interpolated 'this.variationFilter()'
-					// variationFilter() expects 1 param.
-					// The query is:
-					// ... type = ? ...
-					// ... WHERE list_contains(..., ?) ...
-					metric.event_type, // This goes to type = ?
-					variation.id, // This goes to list_contains(..., ?)
-				]);
+				// Placeholders in order: CASE WHEN type = ?, the variation filter, then each segment filter
+				const rows = await runAll(this.conn, full_query, [metric.event_type, variation.id, ...segment_params]);
 
 				results[variation.id] = rows;
 			}),
@@ -366,7 +364,7 @@ export class DuckDB implements OLAPDB {
 			const parsed = await zSessionSchema.parseAsync(session);
 			const row = {
 				id: parsed.id,
-				subject_id: parsed.subject_id,
+				project_id: parsed.project_id,
 				test_ids: JSON.stringify(parsed.test_ids),
 				variation_ids: JSON.stringify(Object.values(parsed.variation_ids || {})),
 				data: JSON.stringify(parsed.data),
@@ -374,8 +372,8 @@ export class DuckDB implements OLAPDB {
 			};
 			await runExec(
 				this.conn,
-				'INSERT INTO sessions (id, subject_id, test_ids, variation_ids, data, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-				[row.id, row.subject_id, row.test_ids, row.variation_ids, row.data, row.created_at],
+				'INSERT INTO sessions (id, project_id, test_ids, variation_ids, data, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+				[row.id, row.project_id, row.test_ids, row.variation_ids, row.data, row.created_at],
 			);
 			return undefined;
 		} catch (err) {

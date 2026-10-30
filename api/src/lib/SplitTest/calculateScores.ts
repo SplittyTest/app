@@ -2,7 +2,7 @@ import DB from '@lib/DB';
 import Logger from '@lib/Logger';
 import { every, forIn, take } from 'lodash-es';
 import { asyncForEach } from 'modern-async';
-import hash from 'hash-it';
+import { hash } from 'hash-it';
 import { calculateVariationScore } from './calculateVariationScore';
 import isArrayWithLength from '@lib/Utils/isArrayWithLength';
 import { changeVariationStatus } from './changeVariationStatus';
@@ -161,19 +161,7 @@ export async function calculateScores(test_id: string, metric_id?: string, alt_s
 				}
 
 				// Always get the default segment
-				let default_result = {
-					variation_id,
-					segment_hash: 'default',
-					view_count: 0,
-					event_count: 0,
-					event_value: 0,
-					event_rate: 0,
-					event_range: [0, 1],
-					variation_score: 0,
-					variation_score_range: [0, 1],
-				};
-
-				default_result = calculateVariationScore(
+				const default_result = calculateVariationScore(
 					variation_id,
 					'default',
 					[],
@@ -237,7 +225,7 @@ export async function calculateScores(test_id: string, metric_id?: string, alt_s
 
 		// Trigger a webhook
 		sendWebhook('test_calculate', {
-			subject_id: test.subject_id,
+			project_id: test.project_id,
 			test_id,
 			results,
 		});

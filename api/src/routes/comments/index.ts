@@ -57,7 +57,8 @@ export default function (router: Router) {
 		// Update an comment
 		.patch(requireRole('viewer'), async (req, res) => {
 			// Users can only update their own comments
-			const result = await DB.Comments.updateById(req.params.id, req.body.comment, (eb: any) => {
+			// Only the text can change (not the author or the test it belongs to)
+			const result = await DB.Comments.updateById(req.params.id, { content: req.body.comment?.content }, (eb: any) => {
 				return eb('user_id', '=', req.user?.id);
 			});
 			res.status(200).json(result);

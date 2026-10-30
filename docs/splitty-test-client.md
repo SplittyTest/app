@@ -39,11 +39,11 @@ const { event_id } = st.logEvent('event_name', { ...user_data });
 ## Class Methods
 
 ### Constructor
-Create a new instance of the SplittyTest class. The API key that is used will determine the test subject for all requests.
+Create a new instance of the SplittyTest class. The API key that is used will determine the test project for all requests.
 <div class="mono nowrap">SplittyTest(api_key: string, options: SplittyTestOptions): void</div>
 
 **Arguments**
-* **api_key** [string] - A subject-specific API key generated from the Splitty Test dashboard.
+* **api_key** [string] - A project-specific API key generated from the Splitty Test dashboard.
 * **options** [SplittyTestOptions] - Additional options for the SplittyTest instance.
 * **options.host** - The URL of the Splitty Test API you are making requests to.
 * **options.defaults** [object] - (Optional) An object containing data that will be appended to the user data of every request sent to the SplittyTest API.
@@ -57,7 +57,7 @@ SplittyTest.participate(section: string, data?: object, options?: object): Promi
 ```
 
 **Arguments**
-* **section** [string]: The section of the subject to participate in a test for.
+* **section** [string]: The section of the project to participate in a test for.
 * **data** [object] - (Optional) Data to append to the user's session. This data is used to track information about each user, apply test traffic and audience filters, and is used as the underyling options for test segmentation.
 * **options** [object] - (Optional) Additional options to send to the participate endpoint.
 * **options.test_id** - (Optional) A test_id to force the user to see.

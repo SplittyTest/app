@@ -22,23 +22,23 @@ export const zSectionSchema = z.object({
 
 export type Section = z.infer<typeof zSectionSchema>;
 
-/** A test subject (typically a website or app) */
-export const zSubjectSchema = z.object({
-	/** A unique slug that idenifies the subject */
+/** A test project (typically a website or app) */
+export const zProjectSchema = z.object({
+	/** A unique slug that idenifies the project */
 	id: z.string().regex(/^[a-z0-9_]+$/),
-	/** The type of subject being tested */
+	/** The type of project being tested */
 	type: z.enum(['website', 'app', 'other']),
-	/** A human-readable name to identify the subject */
+	/** A human-readable name to identify the project */
 	name: z.string(),
-	/** An optional description of the subject */
+	/** An optional description of the project */
 	description: z.string().nullish(),
 	/** A collection of sections that can be tested */
 	sections: z.array(zSectionSchema),
-	/** Set the maximum number of tests can run for this subject at any given time (default: 99) */
+	/** Set the maximum number of tests can run for this project at any given time (default: 99) */
 	max_concurrent_tests: z.number(),
-	/** Set to FALSE to disable tests from running for this subject (default: true) */
+	/** Set to FALSE to disable tests from running for this project (default: true) */
 	testing_enabled: z.boolean(),
-	/** Settings for the subject (nested object so we don't need to keep adding columns) */
+	/** Settings for the project (nested object so we don't need to keep adding columns) */
 	settings: z
 		.object({
 			// Set to TRUE to log events that are not being tracked in tests
@@ -51,7 +51,7 @@ export const zSubjectSchema = z.object({
 			unknown_events_idle_logging_percentage: z.number().nullish(),
 		})
 		.catchall(z.any()),
-	/** Set to TRUE to archive this subject (default: false) */
+	/** Set to TRUE to archive this project (default: false) */
 	archived: z.boolean().nullish(),
 	/** The UTC date when the record was created */
 	created_at: z
@@ -67,4 +67,4 @@ export const zSubjectSchema = z.object({
 		.nullish(),
 });
 
-export type Subject = z.infer<typeof zSubjectSchema>;
+export type Project = z.infer<typeof zProjectSchema>;

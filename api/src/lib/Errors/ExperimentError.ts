@@ -4,7 +4,7 @@ export interface ExperimentErrorDetails {
 	statusCode?: number;
 	reason?: string;
 	silent?: boolean;
-	subject_id?: string;
+	project_id?: string;
 	section_id?: string;
 	test_id?: string;
 	metric_id?: string;
@@ -17,7 +17,7 @@ export class ExperimentError extends Error {
 	statusCode?: number;
 	reason?: string;
 	silent?: boolean;
-	subject_id?: string;
+	project_id?: string;
 	section_id?: string;
 	test_id?: string;
 	metric_id?: string;
@@ -32,7 +32,7 @@ export class ExperimentError extends Error {
 		if (details.reason) this.reason = details.reason;
 
 		// Details about experiment errors
-		if (details.subject_id) this.subject_id = details.subject_id;
+		if (details.project_id) this.project_id = details.project_id;
 		if (details.section_id) this.section_id = details.section_id;
 		if (details.test_id) this.test_id = details.test_id;
 		if (details.metric_id) this.metric_id = details.metric_id;

@@ -8,7 +8,7 @@ const zPromoteParams = z.object({
     variation_id: z.string()
 });
 
-export async function promote(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function promote(req: Request<{ test_id: string }>, res: Response, next: NextFunction): Promise<void> {
     const { test_id } = req.params;
 
     try {

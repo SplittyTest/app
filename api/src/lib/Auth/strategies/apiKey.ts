@@ -14,16 +14,21 @@ async function verify(key: string, callback: VerifyCallback, req?: Express.Reque
 		}
 
 		// Get the API-Key
-		let api_key: APIKey | undefined;
+		let api_key: APIKey;
 		try {
 			api_key = await validateKey(key);
 		} catch (err) {
 			log.warn(err);
-			callback(err as Error);
+			return callback(
+				new AuthError('Invalid API-Key', {
+					statusCode: 401,
+					reason: 'The API-key was invalid',
+				}),
+			);
 		}
 
 		// Check if the API-key is active
-		if (api_key!.status !== 'active') {
+		if (api_key.status !== 'active') {
 			throw new AuthError('Invalid API-Key', {
 				statusCode: 401,
 				reason: 'The API-key has been suspended',
@@ -32,7 +37,7 @@ async function verify(key: string, callback: VerifyCallback, req?: Express.Reque
 
 		if (req) {
 			// Check if the request came from a whitelisted IP address
-			if (!req.ip || (Array.isArray(api_key!.ip_whitelist) && !ipRangeCheck(req.ip, api_key!.ip_whitelist))) {
+			if (!req.ip || (Array.isArray(api_key.ip_whitelist) && !ipRangeCheck(req.ip, api_key.ip_whitelist))) {
 				throw new AuthError('Invalid IP', {
 					statusCode: 401,
 					reason: 'The request came from an invalid IP address',
@@ -41,15 +46,15 @@ async function verify(key: string, callback: VerifyCallback, req?: Express.Reque
 
 			// Add the whitelisted domains to the req context for cors
 			req.auth = {
-				domain_whitelist: api_key!.domain_whitelist ?? [],
+				domain_whitelist: api_key.domain_whitelist ?? [],
 			};
 
-			// Add the subject_id to the request context for logging and other purposes
-			req.subject_id = api_key!.subject_id;
-			req.session.subject_id = api_key!.subject_id;
+			// Add the project_id to the request context for logging and other purposes
+			req.project_id = api_key.project_id;
+			req.session.project_id = api_key.project_id;
 		}
 
-		return callback(null, { id: api_key?.prefix, role: 'api', subject_id: api_key?.subject_id });
+		return callback(null, { id: api_key?.prefix, role: 'api', project_id: api_key?.project_id });
 	} catch (err) {
 		log.error(err);
 		callback(err as Error);

@@ -3,12 +3,15 @@ import { describe, expect, test, beforeAll, afterAll } from '@jest/globals';
 import { TestSimulation } from './lib/TestSimulation';
 import DB from '../../src/lib/DB';
 import { ulid } from 'ulid';
+import crypto from 'node:crypto';
 
 describe('Promotion System', () => {
     let sim: TestSimulation;
     let test_id: string;
-    let subject_id = 'jest_subject';
+    let project_id = 'jest_project';
     let section_id = 'main';
+    let tester_id = ulid();
+    let session_cookie = '';
 
     beforeAll(async () => {
         sim = new TestSimulation({
@@ -19,6 +22,27 @@ describe('Promotion System', () => {
         });
         await sim.start();
 
+        // Promoting requires a signed-in tester (project API keys can't promote)
+        const tester_email = `promotion-tester-${tester_id.toLowerCase()}@example.com`;
+        const tester_password = crypto.randomBytes(16).toString('hex');
+        await DB.Users.insert({
+            id: tester_id,
+            first_name: 'Promotion',
+            last_name: 'Tester',
+            email: tester_email,
+            password: tester_password,
+            role: 'tester',
+            mfa: false,
+            status: 'active',
+        } as any);
+        const login = await fetch(`${(sim as any).apiUrl}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: tester_email, password: tester_password }),
+        });
+        expect(login.status).toBe(200);
+        session_cookie = (login.headers.get('set-cookie') || '').split(';')[0];
+
         // Create a test with Var A as Control
         test_id = ulid();
         await DB.Tests.insert({
@@ -26,7 +50,7 @@ describe('Promotion System', () => {
             name: 'Promotion Test',
             created_by: ulid(),
             created_at: new Date(),
-            subject_id,
+            project_id,
             section_id,
             status: 'active',
             variations: [
@@ -57,6 +81,7 @@ describe('Promotion System', () => {
     afterAll(async () => {
         if (sim) await sim.stop();
         await DB.Tests.deleteById(test_id);
+        await DB.Users.deleteById(tester_id);
     });
 
     test('should promote a variation to control', async () => {
@@ -65,7 +90,7 @@ describe('Promotion System', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `API-Key ${(sim as any).fullApiKey}`
+                'Cookie': session_cookie
             },
             body: JSON.stringify({
                 variation_id: `${test_id}-B`

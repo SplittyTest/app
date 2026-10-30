@@ -28,7 +28,7 @@ Database migrations run in the Job "{{ include "splittytest.fullname" . }}-migra
   Then visit http://localhost:{{ .Values.app.port }}
 {{- end }}
 
-2. Sign in with the first admin user{{ if not .Values.migrator.initUser }}: admin@splittytest.com / password{{ else }} from migrator.initUser{{ end }}
+2. Sign in with the first admin user{{ if not .Values.migrator.initUser }}: admin@splittytest.com, using the generated password in the migration job's logs{{ else }} from migrator.initUser{{ end }}
    Change the password right after signing in.
 
 {{- if and (eq .Values.app.nodeEnv "production") (not .Values.ingress.tls) (not .Values.httpRoute.enabled) }}

@@ -25,7 +25,7 @@ export default defineComponent({
     data() {
         return {
             nav: [
-                { label: 'Subjects', icon: 'Devices', route: '/subjects', role: 'viewer' },
+                { label: 'Projects', icon: 'Devices', route: '/projects', role: 'viewer' },
                 { label: 'Split Tests', icon: 'Fact Check', route: '/split-tests', role: 'viewer' },
                 { label: 'Metrics', icon: 'Analytics', route: '/metrics', role: 'viewer' },
                 { label: 'Audiences', icon: 'Group', route: '/audiences', role: 'tester' },

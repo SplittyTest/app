@@ -42,8 +42,8 @@ export const zWebhookSchema = z.object({
 	id: z.ulid(),
 	/** A unique name to identify the webhook */
 	name: z.string(),
-	/** The ID of the subject to trigger this webhook for */
-	subject_id: z.string(),
+	/** The ID of the project to trigger this webhook for */
+	project_id: z.string(),
 	/** A list of event types to trigger the webhook */
 	events: z.array(z.string()).min(1),
 	/** The URL to send the webhook to */

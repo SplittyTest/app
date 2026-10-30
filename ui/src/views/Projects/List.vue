@@ -5,10 +5,10 @@
 				<div class="page-icon bg-brand">
 					<Icon type="Devices" color="white" size="28px"/>
 				</div>
-				<h1>Test Subjects</h1>
+				<h1>Test Projects</h1>
 			</hgroup>
 			<div v-if="$sessionStore.minRole('tester')" class="controls">
-				<Button label="New Test Subject" @click="newSubject()">
+				<Button label="New Test Project" @click="newProject()">
 					<template #icon>
 						<Icon type="Add"/>
 					</template>
@@ -16,9 +16,9 @@
 			</div>
 		</div>
 		<div class="page-content">
-			<div class="subject-grid flex gap-5 flex-wrap">
-				<template v-for="subject in subjects" :key="subject.id">
-					<TestSubjectCard :subject="subject" @delete="getSubjects"/>
+			<div class="project-grid flex gap-5 flex-wrap">
+				<template v-for="project in projects" :key="project.id">
+					<TestProjectCard :project="project" @delete="getProjects"/>
 				</template>
 			</div>
 		</div>
@@ -28,32 +28,32 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { sortBy, startCase } from 'lodash-es';
-import TestSubjectCard from './SubjectCard.vue';
+import TestProjectCard from './ProjectCard.vue';
 
 export default defineComponent({
-	name: 'TestSubjects',
+	name: 'TestProjects',
 	components: {
-		TestSubjectCard
+		TestProjectCard
 	},
 	data() {
 		return {
-			subjects: [] as any[],
-			subject_menus: {},
+			projects: [] as any[],
+			project_menus: {},
 		}
 	},
 	methods: {
 		startCase,
-		async getSubjects() {
-			const { data } = await this.$API.get(`/api/subjects`);
-			this.subjects = sortBy(data, 'name');
-			await this.$sessionStore.getSubjectsAsOptions();
+		async getProjects() {
+			const { data } = await this.$API.get(`/api/projects`);
+			this.projects = sortBy(data, 'name');
+			await this.$sessionStore.getProjectsAsOptions();
 		},
-		newSubject() {
-			this.$router.push(`/subjects/edit/new`);
+		newProject() {
+			this.$router.push(`/projects/edit/new`);
 		}
 	},
 	async beforeMount() {
-		await this.getSubjects();
+		await this.getProjects();
 	}
 });
 </script>

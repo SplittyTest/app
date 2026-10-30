@@ -183,12 +183,12 @@ export default defineComponent({
         sectionId: {
             handler(new_value, old_value) {
                 if (new_value !== old_value) {
-                    const subject = this.$sessionStore.subject_options.find((subject: any) => {
-                        return subject.value === this.test.subject_id;
+                    const project = this.$sessionStore.project_options.find((project: any) => {
+                        return project.value === this.test.project_id;
                     });
 
-                    if (subject && Array.isArray(subject.sections) && subject.sections.length > 0) {
-                        const section = subject.sections.find((section: any) => {
+                    if (project && Array.isArray(project.sections) && project.sections.length > 0) {
+                        const section = project.sections.find((section: any) => {
                             return section.value === new_value;
                         });
 

@@ -21,7 +21,7 @@ describe('Participate Route with Audiences', () => {
 	let creds: LoginCreds;
 	const testId = ulid();
 	const audienceId = 'mobile_users';
-	const subjectId = 'test_subject';
+	const projectId = 'test_project';
 	const sectionId = 'main_section';
 	const keyPrefix = 'st-12345678';
 	const fullKey = `${keyPrefix}-AABBCCDDEEFF`;
@@ -60,7 +60,7 @@ describe('Participate Route with Audiences', () => {
 			.values({
 				id: testId,
 				name: 'Mobile Test',
-				subject_id: subjectId,
+				project_id: projectId,
 				section_id: sectionId,
 				audience_id: audienceId,
 				variations: JSON.stringify([
@@ -76,8 +76,8 @@ describe('Participate Route with Audiences', () => {
 			.execute();
 
 		// Clear queue and Add test to queue in Redis so it can be picked up
-		await DB.Dict.del(`tests:queue:${subjectId}:${sectionId}`);
-		await DB.Dict.rpush(`tests:queue:${subjectId}:${sectionId}`, testId);
+		await DB.Dict.del(`tests:queue:${projectId}:${sectionId}`);
+		await DB.Dict.rpush(`tests:queue:${projectId}:${sectionId}`, testId);
 
 		// Populate variations queue
 		await DB.Dict.del(`test:${testId}:variations_queue:default`);
@@ -90,7 +90,7 @@ describe('Participate Route with Audiences', () => {
 			.set('Authorization', `API-Key ${fullKey}`)
 			.set('Cookie', creds.cookie)
 			.send({
-				subject_id: subjectId,
+				project_id: projectId,
 				section_id: sectionId,
 				data: { device: 'mobile' },
 			})
@@ -106,7 +106,7 @@ describe('Participate Route with Audiences', () => {
 			.set('Authorization', `API-Key ${fullKey}`)
 			.set('Cookie', creds.cookie)
 			.send({
-				subject_id: subjectId,
+				project_id: projectId,
 				section_id: sectionId,
 				data: { device: 'desktop' },
 			})

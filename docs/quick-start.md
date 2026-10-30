@@ -6,23 +6,23 @@ This is a quick guide to help you get your first split test going.
 
 Before creating your first split test, you will need to create the supporting data for that split test. You will need a user with the `tester` or `admin` role to complete the steps needed to start a test.
 
-### Create a Subject to Run the Test On
+### Create a Project to Run the Test On
 
-A subject is a website or app that you want to run a split test on. You can learn more about test subjects [here](/subjects).
+A project is a website or app that you want to run a split test on. You can learn more about test projects [here](/projects).
 
-1. Click on the "Subjects" link in the main navigation.
-2. Click the "New Test Subject" button in the upper right corner.
-3. Complete the data in the "Details" section of the new subject form.
+1. Click on the "Projects" link in the main navigation.
+2. Click the "New Test Project" button in the upper right corner.
+3. Complete the data in the "Details" section of the new project form.
 4. Open the "Sections" section of the form.
-5. Click the "Add Section" button to add a new section to the subject. Give your section a unique ID and a good description. The data you put in the `data` field will be used as a template when you add a new variation to your tests.
+5. Click the "Add Section" button to add a new section to the project. Give your section a unique ID and a good description. The data you put in the `data` field will be used as a template when you add a new variation to your tests.
 
 > A section is a portion of your wesbite or app that you want to run a test on. A section can be something as large as a full page or as small as a single image. Test participations are triggered when that section requested by a user, so keep that in mind when deciding how to create sections. You don't want to trigger a test unless you're sure the thing you are testing might actually affect user behavior.
 
-6. Save your subject.
+6. Save your project.
 
 ### Create an API Key to Integrate with Your Site or App
 
-You'll need at least one API key for each subject your create in order to make requests to your Splitty Test instance from your website or app. The API key will authenticate requests from your website or app and also set the subject for the session. You can learn more about API keys [here](/api-keys).
+You'll need at least one API key for each project your create in order to make requests to your Splitty Test instance from your website or app. The API key will authenticate requests from your website or app and also set the project for the session. You can learn more about API keys [here](/api-keys).
 
 1. Click on the "Settings" link in the main navigation.
 2. Click the "API Keys" tab.
@@ -60,7 +60,7 @@ If you've completed the steps above, you have everything necessary to set up you
 
 1. Click on the "Split Tests" link in the main navigation.
 2. Click the "New Split Test" button in the upper right corner.
-3. Fill out the "Details" section of the form. Select the subject we previously created, then select the section you want to test.
+3. Fill out the "Details" section of the form. Select the project we previously created, then select the section you want to test.
 4. Continue to the "Audiences" section of the form. If you created an audience earlier that you want to target, click the "Include an Audience" button and select the audience.
 
 > If no audiences are selected, the test will serve to all traffic. Including an audience will limit the traffic to only the users that match any of the inlcuded audiences. Also, you can explicitly exclude certain audiences. Ecluding an audience overrides any included audiences.

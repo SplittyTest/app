@@ -54,7 +54,7 @@
         <template #footer>
             <div class="flex items-center w-full gap-2">
                 <ButtonGroup class="w-full">
-                    <Button variant="outlined" class="flex-auto" @click="$router.push(`/split-tests/${test.subject_id}/test/${test.id}`)">View Test Details</Button>
+                    <Button variant="outlined" class="flex-auto" @click="$router.push(`/split-tests/${test.project_id}/test/${test.id}`)">View Test Details</Button>
                     <Button variant="outlined" @click="toggle">
                         <template #icon>
                             <Icon type="More-Horiz" size="20px"/>
@@ -77,6 +77,7 @@
 </template>
 
 <script lang="ts">
+import { escapeHtml } from '@/lib/utils/safeHtml';
 import { defineComponent } from 'vue';
 import dayjs from '@lib/dayjs';
 import currency from '@lib/utils/currency';
@@ -298,7 +299,7 @@ export default defineComponent({
                 group: 'dialog' as ConfirmationOptions['group'],
                 severity: 'danger',
                 header: 'Stop Test',
-                message: `Are you sure you want to stop the test <strong>${this.test.name}</strong>? Once a test has been stopped, it cannot be restarted.`,
+                message: `Are you sure you want to stop the test <strong>${escapeHtml(this.test.name)}</strong>? Once a test has been stopped, it cannot be restarted.`,
                 acceptProps: {
                     label: 'Stop Test',
                     severity: 'danger'
@@ -348,17 +349,17 @@ export default defineComponent({
             }
         },
         editTest() {
-            this.$router.push(`/split-tests/${this.test.subject_id}/test/${this.test.id}/edit`);
+            this.$router.push(`/split-tests/${this.test.project_id}/test/${this.test.id}/edit`);
         },
         duplicateTest() {
-            this.$router.push(`/split-tests/${this.test.subject_id}/test/new?duplicate_test_id=${this.test.id}`);
+            this.$router.push(`/split-tests/${this.test.project_id}/test/new?duplicate_test_id=${this.test.id}`);
         },
         async deleteTest() {
             this.$confirm.require({
                 group: 'confirmation',
                 severity: 'danger',
                 header: 'Delete Test',
-                message: `Are you sure you want to delete the test <strong>${this.test.name}</strong>? This cannot be undone.`,
+                message: `Are you sure you want to delete the test <strong>${escapeHtml(this.test.name)}</strong>? This cannot be undone.`,
                 acceptProps: {
                     label: 'Delete Test',
                     severity: 'danger'

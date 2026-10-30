@@ -2,7 +2,7 @@ import { z } from 'zod';
 import dayjs from '@lib/dayjs';
 import { zMetricSchema } from '../metrics/metric.schema';
 import { zAudienceSchema } from '../audiences/audience.schema';
-import { zSectionSchema, zSubjectSchema } from '../subjects/subject.schema';
+import { zSectionSchema, zProjectSchema } from '../projects/project.schema';
 
 /** A split test variation */
 export const zVariationSchema = z.object({
@@ -16,6 +16,8 @@ export const zVariationSchema = z.object({
 	weight: z.number().int().optional(),
 	/** The status of the variation within the test */
 	status: z.enum(['active', 'paused', 'archived']),
+	/** TRUE for the variation currently used as the control (set by migration 003 and by promoting a variation) */
+	is_control: z.boolean().optional(),
 });
 export type Variation = z.infer<typeof zVariationSchema>;
 
@@ -25,9 +27,9 @@ export const zTestSchema = z.object({
 	id: z.ulid(),
 	/** A human-readable name to identify this test */
 	name: z.string(),
-	/** The ULID of the subject this test is for */
-	subject_id: z.string().regex(/^[a-z0-9_]+$/),
-	/** The ID of the section the test is for (limited to those defined on the subject) */
+	/** The ULID of the project this test is for */
+	project_id: z.string().regex(/^[a-z0-9_]+$/),
+	/** The ID of the section the test is for (limited to those defined on the project) */
 	section_id: z.string().regex(/^[a-z0-9_]+$/),
 	/** An optional but recommended description of this test */
 	description: z.string().nullish(),
@@ -113,8 +115,8 @@ export type Test = z.infer<typeof zTestSchema>;
 
 // When requesting the test, expanded data from relational IDs
 export const zExpandedTestSchema = zTestSchema.extend({
-	/** The subject this test is for */
-	subject: zSubjectSchema,
+	/** The project this test is for */
+	project: zProjectSchema,
 	/** The section this test is for */
 	section: zSectionSchema,
 	/** The metric being used to make the decision */
@@ -131,8 +133,8 @@ export type ExpandedTest = z.infer<typeof zExpandedTestSchema>;
 /** Only these filters are allowed when requesting tests */
 export const zTestFilters = z
 	.object({
-		/** Get tests for a specific subject */
-		subject_id: z.string(),
+		/** Get tests for a specific project */
+		project_id: z.string(),
 		/** Get tests for a specific section */
 		section_id: z.string(),
 		/** Get tests with one or more statuses */

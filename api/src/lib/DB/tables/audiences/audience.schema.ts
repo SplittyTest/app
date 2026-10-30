@@ -43,8 +43,8 @@ export const zAudienceSchema = z.object({
 	name: z.string(),
 	/** An optional description of the audience */
 	description: z.string().nullish(),
-	/** The optional unique ID of the subject associated with the audience */
-	subject_id: z.string().regex(/^[a-z0-9_]+$/),
+	/** The optional unique ID of the project associated with the audience */
+	project_id: z.string().regex(/^[a-z0-9_]+$/),
 	/** An array of filters to match against */
 	filters: z.array(zAudienceFilterSchema),
 	/** The UTC date when the record was created */

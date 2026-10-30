@@ -1,26 +1,26 @@
-# Subjects
+# Projects
 
-A subject is the term Splitty Test uses for a website or application that you will be running split tests on. Within a subject there are multiple sections. A section is a specific part of the website or application that you want to test. A section can be any part of a subject as small as something like a button, to as large as an entire page or series of pages. It's really up to you how granular you want your test to be.
+A project is the term Splitty Test uses for a website or application that you will be running split tests on. Within a project there are multiple sections. A section is a specific part of the website or application that you want to test. A section can be any part of a project as small as something like a button, to as large as an entire page or series of pages. It's really up to you how granular you want your test to be.
 
-Before you run a split test, you must first define a (test) subject and the sections within it. We create this heirarchy in order to control the assignment of tests to users of those subjects.
+Before you run a split test, you must first define a (test) project and the sections within it. We create this heirarchy in order to control the assignment of tests to users of those projects.
 
-## Creating a Subject
+## Creating a Project
 
-To create a new test subject in your Splitty Test dashboard, do the following:
+To create a new test project in your Splitty Test dashboard, do the following:
 
-1. Click on the "Subjects" link in main navigation.
-2. Click the "New Test Subject" button in the upper-right corner.
-3. Fill out the form and click "Save Subject" at the bottom.
+1. Click on the "Projects" link in main navigation.
+2. Click the "New Test Project" button in the upper-right corner.
+3. Fill out the form and click "Save Project" at the bottom.
 
-### Subject Form Fields
+### Project Form Fields
 
-**Subject Details**<br>
-Basic identifying information about the test subject.
+**Project Details**<br>
+Basic identifying information about the test project.
 
-* **Test Subject Name** - A unique and clearly identifiable name for your test subject. Typically the application or website name.
-* **Subject ID** - A unique slug to identify the test subject. (e.g. `mywebsite_com` for mywebsite.com)
-* **Type** - Select the type of test subject: Website, App, or Other. Helpful for categorization.
-* **Description** - A short description of the test subject to help users identify it.
+* **Test Project Name** - A unique and clearly identifiable name for your test project. Typically the application or website name.
+* **Project ID** - A unique slug to identify the test project. (e.g. `mywebsite_com` for mywebsite.com)
+* **Type** - Select the type of test project: Website, App, or Other. Helpful for categorization.
+* **Description** - A short description of the test project to help users identify it.
 
 **Sections**<br>
 The sections of the website that will have tests run against them. Click "Add Section" to add a new section. You can add as many sections as needed.
@@ -31,13 +31,13 @@ The sections of the website that will have tests run against them. Click "Add Se
 * **Data** - This is the default data template that will be auto-loaded when creating variants for this section in a test. Typically this data is what you are making available on a website and adding it here as a default makes it easier to remember when creating a test.
 * **Testing Enabled** - You can toggle testing for this section to enable or disable serving tests at any time.
 * **Max Concurrent Tests** - It's typically not recommended that you run too many tests on a specific section at one time. You can set a limit here that will trigger logic to limit the number of tests being run simultaneously.
-* **Skip Test Frequency** - How often to skip serving a test to subject users in one rotation. For instance, if set to two, for every three visitors that view the section, 2 of them will not receive a test. Set to 0 to serve tests to all users when there is an active test.
+* **Skip Test Frequency** - How often to skip serving a test to project users in one rotation. For instance, if set to two, for every three visitors that view the section, 2 of them will not receive a test. Set to 0 to serve tests to all users when there is an active test.
 
 **Settings**<br>
-Additional settings for the subject to determine how tests are served and data is logged.
+Additional settings for the project to determine how tests are served and data is logged.
 
-* **Testing Enabled** - You can toggle testing on and off for the subject. If testing is disabled, no active tests will be served to users.
-* **Max Concurrent Tests** - Limit the number of active tests that can run on this test subject at the same time.
+* **Testing Enabled** - You can toggle testing on and off for the project. If testing is disabled, no active tests will be served to users.
+* **Max Concurrent Tests** - Limit the number of active tests that can run on this test project at the same time.
 * **Log Untracked Events** - Enable this to log events that have not been added to metric tracking in an active test.
 * **Log unknown events** - Enable this to log events that have not been registered in the Splitty Test dashboard.
 

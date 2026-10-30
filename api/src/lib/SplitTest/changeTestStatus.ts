@@ -18,32 +18,32 @@ export async function changeTestStatus(test: Test, new_status: Test['status'], u
 
 	// Start a pending test
 	if (new_status === 'active' && test.status === 'pending') {
-		// Get the test subject
-		const subject = await DB.Subjects.getById(test.subject_id);
-		const active_subject_tests = await DB.Tests.getByFilter((eb: any) =>
-			eb.and([eb('subject_id', '=', test.subject_id), eb('status', '=', 'active')]),
+		// Get the test project
+		const project = await DB.Projects.getById(test.project_id);
+		const active_project_tests = await DB.Tests.getByFilter((eb: any) =>
+			eb.and([eb('project_id', '=', test.project_id), eb('status', '=', 'active')]),
 		);
 
-		// Check if the test can be activated for the subject
-		if (active_subject_tests.length >= (subject?.max_concurrent_tests || 1)) {
-			throw new ExperimentError('Max concurrent test limit reached for subject', {
+		// Check if the test can be activated for the project
+		if (active_project_tests.length >= (project?.max_concurrent_tests || 1)) {
+			throw new ExperimentError('Max concurrent test limit reached for project', {
 				test_id: test?.id,
-				subject_id: test.subject_id,
+				project_id: test.project_id,
 				section_id: test.section_id,
 			});
 		}
 
 		// Check if the test can activate for the section
-		const active_section_tests = active_subject_tests.filter((subject_test) => {
-			return subject_test.section_id === test.section_id;
+		const active_section_tests = active_project_tests.filter((project_test) => {
+			return project_test.section_id === test.section_id;
 		});
-		const section = subject?.sections.find((sec) => {
+		const section = project?.sections.find((sec) => {
 			return sec.id === test.section_id;
 		});
 		if (active_section_tests.length >= (section?.max_concurrent_tests || 1)) {
 			throw new ExperimentError('Max concurrent test limit reached for section', {
 				test_id: test?.id,
-				subject_id: test.subject_id,
+				project_id: test.project_id,
 				section_id: test.section_id,
 			});
 		}
@@ -282,16 +282,16 @@ export async function changeTestStatus(test: Test, new_status: Test['status'], u
 
 	// Send a webhook
 	sendWebhook('test_status', {
-		subject_id: test.subject_id,
+		project_id: test.project_id,
 		test_id: test.id,
 		test,
 		old_status: test.status,
 		new_status: new_status,
 	});
 
-	// Clear the subject list cache
-	DB.Dict.del('db:subjects:getList').catch((err) => {
-		log.warn('Unable to clear cache key for subject list');
+	// Clear the project list cache
+	DB.Dict.del('db:projects:getList').catch((err) => {
+		log.warn('Unable to clear cache key for project list');
 	});
 
 	return {

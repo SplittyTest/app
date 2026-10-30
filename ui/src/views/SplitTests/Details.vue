@@ -9,7 +9,7 @@
 					<div class="flex-row">
 						<h1 class="mr-1">{{ test?.name }}</h1>
 					</div>
-					<div class="breadcrumbs text-white opacity-75"><router-link :to="`/split-tests/${subject.id}`">{{ subject.name }}</router-link> <span class="m-0.5">/</span> {{ test?.section_id }}</div>
+					<div class="breadcrumbs text-white opacity-75"><router-link :to="`/split-tests/${project.id}`">{{ project.name }}</router-link> <span class="m-0.5">/</span> {{ test?.section_id }}</div>
 				</hgroup>
 			</div>
 			<div class="right flex-row">
@@ -348,7 +348,7 @@ import VariationDataModal from '@/views/SplitTests/Modals/VariationDataModal.vue
 import { useMagicKeys } from '@vueuse/core';
 import { hash } from 'hash-it';
 import { cloneDeep, every, get, isNaN, startCase } from 'lodash-es';
-import { marked } from 'marked';
+import { escapeHtml, renderMarkdown } from '@/lib/utils/safeHtml';
 import { mapStores } from 'pinia';
 import type Chart from 'primevue/chart';
 import type { ConfirmationOptions } from 'primevue/confirmationoptions';
@@ -371,7 +371,7 @@ export default defineComponent({
 				{label: 'Default', value: 'default'},
 				{label: 'Series', value: 'series'},
 			],
-			subject: {} as any,
+			project: {} as any,
 			test: {
 				id: '01KPEW303G8T1BVY0HQK409QQ5',
 				name: 'My Test',
@@ -768,7 +768,7 @@ export default defineComponent({
 		currency,
 		dayjs,
 		md(v: string) {
-			return marked.parse(v);
+			return renderMarkdown(v);
 		},
 		num,
 		percentage,
@@ -898,7 +898,7 @@ export default defineComponent({
                 group: 'confirmation',
                 header: 'Pause Variation',
 				icon: 'pause-circle',
-                message: `Are you sure you want to pause the variation <strong>${variation.description}</strong>?${unpause_msg}`,
+                message: `Are you sure you want to pause the variation <strong>${escapeHtml(variation.description)}</strong>?${unpause_msg}`,
                 acceptProps: {
                     label: 'Pause Variation',
                 },
@@ -1006,7 +1006,7 @@ export default defineComponent({
                 group: 'confirmation',
                 severity: 'danger',
                 header: 'Stop Test',
-                message: `Are you sure you want to stop the test <strong>${this.test.name}</strong>? Once a test has been stopped, it cannot be restarted.`,
+                message: `Are you sure you want to stop the test <strong>${escapeHtml(this.test.name)}</strong>? Once a test has been stopped, it cannot be restarted.`,
                 acceptProps: {
                     label: 'Stop Test',
                     severity: 'danger'
@@ -1088,16 +1088,16 @@ export default defineComponent({
 					return v.id === status_log?.data?.variation_id;
 				});
 				if (variation) {
-					return `The variation "${variation.description}" was changed to ${status_log?.data?.mode} for the segment ${status_log?.data?.segment || 'unknown'}.`;
+					return `The variation "${escapeHtml(variation.description)}" was changed to ${escapeHtml(status_log?.data?.mode)} for the segment ${escapeHtml(status_log?.data?.segment || 'unknown')}.`;
 				}
 			}
-			return `The test status was changed to <strong>${status_log?.data?.status}.</strong>`;
+			return `The test status was changed to <strong>${escapeHtml(status_log?.data?.status)}.</strong>`;
 		}
 	},
 	async beforeMount() {
 		await this.getTestDetails();
-		const { data: subject } = await this.$API.get(`/api/subjects/${this.test.subject_id}`);
-		this.subject = subject;
+		const { data: project } = await this.$API.get(`/api/projects/${this.test.project_id}`);
+		this.project = project;
 	}
 });
 </script>

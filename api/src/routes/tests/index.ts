@@ -4,14 +4,18 @@ import { ExperimentError } from '@/lib/Errors/ExperimentError';
 import log from '@/lib/Logger';
 import { calculateScores } from '@/lib/SplitTest/calculateScores';
 import { changeTestStatus } from '@/lib/SplitTest/changeTestStatus';
+import { promote } from './promote';
 import { Metric } from '@/types/schemas';
 import DB from '@lib/DB';
 import { Router } from 'express';
-import hash from 'hash-it';
+import { hash } from 'hash-it';
 import { forIn, sortBy } from 'lodash-es';
 import { asyncForEach } from 'modern-async';
 
 export default function (router: Router) {
+	// Promote a variation to be the new control
+	router.post('/tests/:test_id/promote', requireRole('tester'), promote);
+
 	router
 		.route('/tests')
 

@@ -1,12 +1,12 @@
 <template>
-    <div class="subject-form-section details">
+    <div class="project-form-section details">
         <div class="control-group">
             <div class="inner">
-                <label class="control-label">Test Subject Name:</label>
+                <label class="control-label">Test Project Name:</label>
                 <div class="controls">
                     <div class="field">
-                        <FieldValidation name="name" :value="subject.name" v-slot="{ error_message }" :validator="validator" :rules="validationRules.name">
-                            <InputText fluid v-model="subject.name" :invalid="!!error_message" autofocus />
+                        <FieldValidation name="name" :value="project.name" v-slot="{ error_message }" :validator="validator" :rules="validationRules.name">
+                            <InputText fluid v-model="project.name" :invalid="!!error_message" autofocus />
                             <FormError :error="error_message"/>
                         </FieldValidation>
                     </div>
@@ -15,11 +15,11 @@
         </div>
         <div class="control-group">
             <div class="inner">
-                <label class="control-label">Subject ID:</label>
+                <label class="control-label">Project ID:</label>
                 <div class="controls">
                     <div class="field">
-                        <FieldValidation name="id" :value="subjectId" v-slot="{ error_message }" :validator="validator" :rules="validationRules.id">
-                            <InputText fluid v-model.trim="subjectId" :invalid="!!error_message" :disabled="!isNew" autofocus />
+                        <FieldValidation name="id" :value="projectId" v-slot="{ error_message }" :validator="validator" :rules="validationRules.id">
+                            <InputText fluid v-model.trim="projectId" :invalid="!!error_message" :disabled="!isNew" autofocus />
                             <FormError :error="error_message"/>
                         </FieldValidation>
                     </div>
@@ -31,7 +31,7 @@
                 <label class="control-label">Type:</label>
                 <div class="controls">
                     <div class="field">
-                        <Select fluid v-model="subject.type" :options="type_options" option-label="label" option-value="value"/>
+                        <Select fluid v-model="project.type" :options="type_options" option-label="label" option-value="value"/>
                     </div>
                 </div>
             </div>
@@ -41,8 +41,8 @@
                 <label class="control-label">Description:</label>
                 <div class="controls">
                     <div class="field">
-                        <FieldValidation name="description" :value="subject.description" v-slot="{ error_message }" :validator="validator" :rules="validationRules.description">
-                            <InputText fluid v-model="subject.description" :invalid="!!error_message"/>
+                        <FieldValidation name="description" :value="project.description" v-slot="{ error_message }" :validator="validator" :rules="validationRules.description">
+                            <InputText fluid v-model="project.description" :invalid="!!error_message"/>
                             <FormError :error="error_message"/>
                         </FieldValidation>
                     </div>
@@ -58,9 +58,9 @@ import { rules } from '@splitty-test/validation';
 import { snakeCase } from 'lodash-es';
 
 export default defineComponent({
-    name: 'SubjectFormDetails',
+    name: 'ProjectFormDetails',
     props: {
-        subject: {
+        project: {
             type: Object,
             required: true,
         },
@@ -80,14 +80,14 @@ export default defineComponent({
     },
     computed: {
         isNew() {
-            return !this.$route.params.subject_id;
+            return !this.$route.params.project_id;
         },
-        subjectId: {
+        projectId: {
             get() {
-                return this.subject.id;
+                return this.project.id;
             },
             set(new_value: string) {
-                this.subject.id = snakeCase(new_value);
+                this.project.id = snakeCase(new_value);
             }
         },
         validationRules() {
@@ -96,13 +96,13 @@ export default defineComponent({
                     rules.required('An ID is required'),
                     async (v: string) => {
                         if (this.isNew) {
-                            const { data: subjects } = await this.$API.get(`/api/subjects`);
-                            if (Array.isArray(subjects)) {
-                                const subject_ids = subjects.map((subject) => {
-                                    return subject.id;
+                            const { data: projects } = await this.$API.get(`/api/projects`);
+                            if (Array.isArray(projects)) {
+                                const project_ids = projects.map((project) => {
+                                    return project.id;
                                 });
-                                if (subject_ids.includes(v)) {
-                                    return 'Another subject is already using that ID';
+                                if (project_ids.includes(v)) {
+                                    return 'Another project is already using that ID';
                                 }
                             }
                         }
@@ -110,7 +110,7 @@ export default defineComponent({
                     }
                 ],
                 name: [
-                    rules.required('A subject name is required')
+                    rules.required('A project name is required')
                 ],
                 description: [
                     rules.required('A description is required')
@@ -119,10 +119,10 @@ export default defineComponent({
         }
     },
     watch: {
-        'subject.name': {
+        'project.name': {
             handler(new_value) {
                 if (this.isNew) {
-                    this.subject.id = snakeCase(new_value);
+                    this.project.id = snakeCase(new_value);
                 }
             }
         }

@@ -39,3 +39,5 @@ NOTES.MD
 # Vitepress
 docs/.vitepress/dist
 docs/.vitepress/cache
+# Temporary files pending deletion
+_to_delete/

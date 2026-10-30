@@ -28,7 +28,7 @@
                     <Icon type="Key" size="48px" color="gray-400"/>
                     <div class="text-center text-gray-500">
                         <h2 class="text-lg!">No API Keys Yet</h2>
-                        <p class="text-sm">Create API keys to start running tests on a subject.</p>
+                        <p class="text-sm">Create API keys to start running tests on a project.</p>
                     </div>
                     <Button label="New API Key" @click="editAPIKey('new')">
                         <template #icon>
@@ -43,9 +43,9 @@
                     <div class="text-sm text-gray-400">{{ api_key.prefix }}-???</div>
                 </template>
             </Column>
-            <Column field="subject_id" header="Subject" sortable>
+            <Column field="project_id" header="Project" sortable>
                 <template #body="{ data: api_key }">
-                    {{ subjectName(api_key.subject_id) }}
+                    {{ projectName(api_key.project_id) }}
                 </template>
             </Column>
             <Column field="status" header="Status" sortable header-class="text-center" class="text-center">
@@ -114,11 +114,11 @@ export default defineComponent({
                 this.api_keys = data;
             }
         },
-        subjectName(subject_id: string) {
-            const subject = this.$sessionStore.subject_options.find((option: any) => {
-                return option.value === subject_id;
+        projectName(project_id: string) {
+            const project = this.$sessionStore.project_options.find((option: any) => {
+                return option.value === project_id;
             });
-            return subject ? subject.label : 'Unknown';
+            return project ? project.label : 'Unknown';
         },
         editAPIKey(api_key_prefix: string) {
             this.selected_api_key_prefix = api_key_prefix;

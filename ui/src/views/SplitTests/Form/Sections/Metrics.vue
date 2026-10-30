@@ -137,8 +137,8 @@ export default defineComponent({
         isPending() {
             return this.test.status === 'pending';
         },
-        subjectId() {
-            return this.test.subject_id;
+        projectId() {
+            return this.test.project_id;
         },
         availableMetrics() {
             return sortBy(this.metrics.filter((metric) => {
@@ -164,7 +164,7 @@ export default defineComponent({
         },
     },
     watch: {
-        async subjectId(new_value: string, old_value: string) {
+        async projectId(new_value: string, old_value: string) {
             if (new_value !== old_value) {
                 await this.fetchMetrics();
 
@@ -179,11 +179,11 @@ export default defineComponent({
     methods: {
         title,
         async fetchMetrics() {
-            if (!this.test.subject_id) return;
+            if (!this.test.project_id) return;
             const { data } = await this.$API.get('/api/metrics', {
                 params: {
                     filter: {
-                        subject_id: this.test.subject_id
+                        project_id: this.test.project_id
                     }
                 }
             });

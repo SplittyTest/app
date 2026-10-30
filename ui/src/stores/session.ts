@@ -29,7 +29,7 @@ export const useSessionStore = defineStore('session', {
 				test_id: null as string | null,
 				test_name: '',
 			},
-			subject_options: [] as { label: string; value: string }[],
+			project_options: [] as { label: string; value: string }[],
 			user_options: [] as { label: string; value: string }[],
 		};
 	},
@@ -50,7 +50,7 @@ export const useSessionStore = defineStore('session', {
 	},
 	actions: {
 		async init() {
-			await Promise.all([this.getSettings(), this.getSubjectsAsOptions(), this.getUsersAsOptions()]);
+			await Promise.all([this.getSettings(), this.getProjectsAsOptions(), this.getUsersAsOptions()]);
 		},
 		async getSettings() {
 			const { data } = await $API.get('/api/settings');
@@ -71,17 +71,17 @@ export const useSessionStore = defineStore('session', {
 				});
 			}
 		},
-		async getSubjectsAsOptions() {
-			const { data } = await $API.get(`/api/subjects`);
-			this.subject_options = sortBy(data, 'name').map((subject) => {
+		async getProjectsAsOptions() {
+			const { data } = await $API.get(`/api/projects`);
+			this.project_options = sortBy(data, 'name').map((project) => {
 				const option = {
-					label: subject.name,
-					value: subject.id,
+					label: project.name,
+					value: project.id,
 					sections: [] as any[],
 				};
 
-				if (Array.isArray(subject.sections)) {
-					option.sections = sortBy(subject.sections, 'name').map((section) => ({
+				if (Array.isArray(project.sections)) {
+					option.sections = sortBy(project.sections, 'name').map((section) => ({
 						label: section.id,
 						value: section.id,
 						description: section.description,

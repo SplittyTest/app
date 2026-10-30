@@ -38,7 +38,7 @@ export async function insert(data: Test | Test[]): Promise<Test | Test[] | null>
 	if (result) {
 		asyncForEach(flatten([result]), async (test) => {
 			sendWebhook('test_create', {
-				subject_id: test.subject_id,
+				project_id: test.project_id,
 				test,
 			});
 		});
@@ -74,15 +74,15 @@ export async function getExpandedById(id: string) {
 			| Test
 			| undefined;
 		if (test) {
-			// Get the subject and section
-			const subject = await Store.selectFrom('subjects')
+			// Get the project and section
+			const project = await Store.selectFrom('projects')
 				.selectAll()
-				.where('id', '=', test.subject_id)
+				.where('id', '=', test.project_id)
 				.executeTakeFirst();
-			if (subject) {
-				(test as any).subject = subject;
+			if (project) {
+				(test as any).project = project;
 
-				const section = subject.sections?.find((s) => s.id === test.section_id);
+				const section = project.sections?.find((s) => s.id === test.section_id);
 				if (section) {
 					(test as any).section = section;
 				} else {
@@ -178,9 +178,9 @@ export async function getList(filter_params?: TestFilters) {
 	let query = Store.selectFrom('tests as t');
 
 	if (filters) {
-		// Get tests for a specific subject
-		if (filters.subject_id) {
-			query = query.where('t.subject_id', '=', filters.subject_id);
+		// Get tests for a specific project
+		if (filters.project_id) {
+			query = query.where('t.project_id', '=', filters.project_id);
 
 			if (filters.section_id) {
 				query = query.where('t.section_id', '=', filters.section_id);
@@ -199,11 +199,11 @@ export async function getList(filter_params?: TestFilters) {
 	}
 
 	const tests = await query
-		.leftJoin('subjects', 'subjects.id', 't.subject_id')
+		.leftJoin('projects', 'projects.id', 't.project_id')
 		.leftJoin('users', 'users.id', 't.created_by')
 		.selectAll('t')
 		.select([
-			'subjects.name as subject_name',
+			'projects.name as project_name',
 			sql<string>`trim(concat(users.first_name, ' ', users.last_name))`.as('created_by_name'),
 		])
 		.orderBy('t.created_at', 'desc')
@@ -329,9 +329,9 @@ export async function deleteByFilter(filter: any) {
 	return tests;
 }
 
-// Delete all tests for a subject
-export async function deleteBySubjectId(subject_id: string) {
-	const tests = await getByFilter((eb: any) => eb('subject_id', '=', subject_id));
+// Delete all tests for a project
+export async function deleteByProjectId(project_id: string) {
+	const tests = await getByFilter((eb: any) => eb('project_id', '=', project_id));
 	if (isArrayWithLength(tests)) {
 		await asyncForEach(
 			tests,

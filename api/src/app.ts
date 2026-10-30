@@ -48,6 +48,9 @@ export async function createApp(session_key: string): Promise<express.Express> {
 				secure: process.env.NODE_ENV === 'production',
 				maxAge: 86400 * 30 * 1000,
 				path: '/api',
+				httpOnly: true,
+				// Admin sessions are only used by the same-site UI, so block cross-site requests from carrying them
+				sameSite: 'lax',
 			},
 			genid: (req) => {
 				return ulid();

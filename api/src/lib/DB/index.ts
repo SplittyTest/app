@@ -8,7 +8,7 @@ import * as Comments from './tables/comments';
 import * as Metrics from './tables/metrics';
 import * as Settings from './tables/settings';
 import * as StatusLogs from './tables/status_logs';
-import * as Subjects from './tables/subjects';
+import * as Projects from './tables/projects';
 import * as Tests from './tables/tests';
 import * as TestResults from './tables/test_results';
 import * as Users from './tables/users';
@@ -28,7 +28,7 @@ export default {
 	Metrics,
 	Settings,
 	StatusLogs,
-	Subjects,
+	Projects,
 	Tests,
 	TestResults,
 	Users,

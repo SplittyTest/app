@@ -80,7 +80,7 @@ export default defineConfig({
             text: "App Sections",
             collapsed: true,
             items: [
-              { text: "Subjects", link: "/subjects" },
+              { text: "Projects", link: "/projects" },
               { text: "Metrics", link: "/metrics" },
               { text: "Audiences", link: "/audiences" },
               { text: "Split Tests", link: "/split-tests" },

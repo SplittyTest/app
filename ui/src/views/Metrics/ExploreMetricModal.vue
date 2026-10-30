@@ -260,7 +260,7 @@ export default defineComponent({
             },
             metric: {
                 id: null as string | null,
-                subject_id: null as string | null,
+                project_id: null as string | null,
                 name: null as string | null,
                 description: null as string | null,
                 event_type: null as string | null,

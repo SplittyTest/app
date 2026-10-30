@@ -13,8 +13,8 @@ import Settings from '@/views/Settings/Settings.vue';
 import SplitTestDetails from '@/views/SplitTests/Details.vue';
 import SplitTestForm from '@/views/SplitTests/Form/Form.vue';
 import SplitTestList from '@/views/SplitTests/List.vue';
-import SubjectForm from '@/views/Subjects/Form/Form.vue';
-import SubjectsList from '@/views/Subjects/List.vue';
+import ProjectForm from '@/views/Projects/Form/Form.vue';
+import ProjectsList from '@/views/Projects/List.vue';
 import { useSessionStore } from '@/stores/Session';
 import useToast from '@/lib/utils/useToast';
 
@@ -49,25 +49,25 @@ const routes = [
 		component: Private,
 		children: [
 			{
-				path: 'subjects',
+				path: 'projects',
 				children: [
 					{
 						path: '',
-						name: 'SubjectsList',
-						component: SubjectsList,
+						name: 'ProjectsList',
+						component: ProjectsList,
 					},
 					{
 						path: 'edit/new',
-						name: 'SubjectCreate',
-						component: SubjectForm,
+						name: 'ProjectCreate',
+						component: ProjectForm,
 						meta: {
 							role: 'tester',
 						},
 					},
 					{
-						path: 'edit/:subject_id',
-						name: 'SubjectEdit',
-						component: SubjectForm,
+						path: 'edit/:project_id',
+						name: 'ProjectEdit',
+						component: ProjectForm,
 						meta: {
 							role: 'tester',
 						},

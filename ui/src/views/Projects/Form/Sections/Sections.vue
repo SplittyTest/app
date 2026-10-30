@@ -1,9 +1,9 @@
 <template>
-    <div class="subject-form-section">
+    <div class="project-form-section">
         <div class="flex items-center justify-between mb-2">
             <div>
                 <strong class="text-lg mb-0">Test Sections</strong>
-                <div class="text-gray-500 text-sm mb-0">These are specific sections of your test subject you want to run tests against</div>
+                <div class="text-gray-500 text-sm mb-0">These are specific sections of your test project you want to run tests against</div>
             </div>
             <Button label="Add Section" @click="editSection()">
                 <template #icon>
@@ -11,7 +11,7 @@
                 </template>
             </Button>
         </div>
-        <div v-for="(section, index) in subject.sections" :key="section.id!" class="section">
+        <div v-for="(section, index) in project.sections" :key="section.id!" class="section">
             <div class="flex items-center justify-between w-full">
                 <div class="info">
                     <div class="id">{{ section.id }}</div>
@@ -67,12 +67,12 @@ import { defineComponent } from 'vue';
 import SectionForm from '../SectionForm.vue';
 
 export default defineComponent({
-    name: 'SubjectFormSections',
+    name: 'ProjectFormSections',
     components: {
         SectionForm,
     },
     props: {
-        subject: {
+        project: {
             type: Object,
             required: true,
         },
@@ -90,7 +90,7 @@ export default defineComponent({
     },
     computed: {
         sectionIds() {
-            return this.subject.sections.map((v: any) => v.id);
+            return this.project.sections.map((v: any) => v.id);
         },
     },
     methods: {
@@ -124,20 +124,20 @@ export default defineComponent({
         },
         saveSection(new_section: any) {
             if (isNumber(this.edit_index)) {
-                this.subject.sections.splice(this.edit_index, 1, new_section);
+                this.project.sections.splice(this.edit_index, 1, new_section);
             }
             else {
-                this.subject.sections.push(new_section);
+                this.project.sections.push(new_section);
             }
 
             // Sort the sections by ID
-            this.subject.sections = sortBy(this.subject.sections, ['id']);
+            this.project.sections = sortBy(this.project.sections, ['id']);
         },
         deleteSection(section_id: string | null) {
-            const section_index = this.subject.sections.findIndex((section: any) => {
+            const section_index = this.project.sections.findIndex((section: any) => {
                 return section.id === section_id;
             });
-            this.subject.sections.splice(section_index, 1);
+            this.project.sections.splice(section_index, 1);
         },
         hasActiveTests(section_id: string | null) {
             if (Array.isArray(this.active_tests)) {

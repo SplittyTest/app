@@ -10,7 +10,7 @@ import type {
 	Session,
 	Setting,
 	StatusLog,
-	Subject,
+	Project,
 	Test,
 	TestResult,
 	User,
@@ -18,7 +18,7 @@ import type {
 	Webhook,
 } from '@/types/schemas';
 import { JSONColumnType } from 'kysely';
-import { Section } from '@/lib/DB/tables/subjects/subject.schema';
+import { Section } from '@/lib/DB/tables/projects/project.schema';
 import { InsertResult } from '@clickhouse/client';
 
 export interface GetMetricSeriesDataParams {
@@ -73,7 +73,7 @@ export interface DBStore {
 	comments: CommentsTable;
 	settings: SettingsTable;
 	status_logs: StatusLogsTable;
-	subjects: SubjectsTable;
+	projects: ProjectsTable;
 	tests: TestsTable;
 	test_results: TestResultsTable;
 	users: UsersTable;
@@ -109,7 +109,7 @@ export interface MetricsTable extends Metric {}
 export interface SessionsTable extends Session {}
 export type SettingsTable = Setting;
 export interface StatusLogsTable extends StatusLog {}
-export interface SubjectsTable extends Omit<Subject, 'sections' | 'data'> {
+export interface ProjectsTable extends Omit<Project, 'sections' | 'data'> {
 	data: JSONColumnType<any>;
 	sections: JSONColumnType<Section[]>;
 }

@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS
     SETTINGS index_granularity = 8192`,
 	];
 
-	asyncForEach(tables, async (query) => {
+	await asyncForEach(tables, async (query) => {
 		await client.exec({
 			query,
 		});

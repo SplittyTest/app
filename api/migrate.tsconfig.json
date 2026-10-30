@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "CommonJS",
+    "module": "nodenext",
     "baseUrl": ".",
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
     "paths": {
       "@/*": [
@@ -19,7 +19,7 @@
         "src/types/*"
       ]
     },
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,

@@ -2,7 +2,7 @@ import DB from '@lib/DB';
 import { Variation } from '@lib/DB/tables/tests/test.schema';
 import { ExperimentError } from '../Errors/ExperimentError';
 
-// Return a list of potential tests to serve for a given subject and section
+// Return a list of potential tests to serve for a given project and section
 export async function getTestVariationById(variation_id: string) {
 	// Split the variation_id to get the test_id
 	const [test_id] = variation_id.split('-');

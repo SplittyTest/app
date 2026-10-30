@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it, afterAll } from '@jest/globals';
 // import { APIKey, zAPIKeySchema } from '../../../../src/lib/DB/tables/api_keys/api_key.schema';
 // import { type ExperimentTest } from '../../../../src/types/'
 // import { omit } from 'lodash-es';
-// import { Subject, zSubjectSchema } from '../../../../src/lib/DB/tables/subjects/subject.schema';
+// import { Project, zProjectSchema } from '../../../../src/lib/DB/tables/projects/project.schema';
 // import { ulid } from 'ulid';
 
 
@@ -24,7 +24,7 @@ import { beforeAll, describe, expect, it, afterAll } from '@jest/globals';
 //     let api_key: APIKey;
 //     let full_key: string;
 //     let creds: LoginCreds;
-//     let subject: Subject;
+//     let project: Project;
 
 //     beforeAll(async () => {
 //         api_key = zAPIKeySchema.parse({
@@ -43,9 +43,9 @@ import { beforeAll, describe, expect, it, afterAll } from '@jest/globals';
 
 //         full_key = res.body.key;
 
-//         subject = zSubjectSchema.parse({
+//         project = zProjectSchema.parse({
 //             id: 'abc',
-//             name: 'test subject',
+//             name: 'test project',
 //             type: 'website',
 //             sections: [{
 //                 id: 'def',
@@ -64,18 +64,18 @@ import { beforeAll, describe, expect, it, afterAll } from '@jest/globals';
 //             testing_enabled: true,
 //         })
 
-//         await DB.Store.insertInto("subjects").values({ ...subject, sections: JSON.stringify(subject.sections), data: JSON.stringify(subject.data) }).execute()
+//         await DB.Store.insertInto("projects").values({ ...project, sections: JSON.stringify(project.sections), data: JSON.stringify(project.data) }).execute()
 //     });
 
 //     afterAll(async () => {
 //         await DB.Store.deleteFrom("api_keys").where(sql.ref("name"), "=", "test").execute();
-//         await DB.Store.deleteFrom("subjects").where(sql.ref("id"), "=", "abc").execute();
+//         await DB.Store.deleteFrom("projects").where(sql.ref("id"), "=", "abc").execute();
 //     })
 
 //     describe('POST /participate', () => {
 //         it('should return 204 if there are no active tests', async () => {
 //             const experiment: ExperimentTest = {
-//                 subject_id: 'abc',
+//                 project_id: 'abc',
 //                 section_id: 'def',
 //                 data: {
 //                     my: 'data'

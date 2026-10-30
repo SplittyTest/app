@@ -4,7 +4,8 @@
 #   docker compose up --build
 #
 # App:      http://localhost:3000   (API + built UI)
-# Login:    admin@splittytest.com / password   (override with INIT_USER before the first run)
+# Login:    admin@splittytest.com — the password is generated and printed in the
+#           migrate-store logs (`docker compose logs migrate-store`), unless INIT_USER sets one
 #
 # Values are read from a .env file next to this compose file. Every key has a
 # local-only default so `docker compose up` works without one.

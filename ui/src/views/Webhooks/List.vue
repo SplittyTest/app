@@ -43,9 +43,9 @@
                     <div class="text-sm text-gray-400">{{ webhook.url }}</div>
                 </template>
             </Column>
-            <Column field="subject_id" header="Subject" sortable>
+            <Column field="project_id" header="Project" sortable>
                 <template #body="{ data: webhook }">
-                    {{ subjectName(webhook.subject_id) }}
+                    {{ projectName(webhook.project_id) }}
                 </template>
             </Column>
             <Column field="events" header="Events">
@@ -94,11 +94,11 @@ export default defineComponent({
         
     },
     methods: {
-        subjectName(subject_id: string) {
-            const subject = this.$sessionStore.subject_options.find((option: any) => {
-                return option.value === subject_id;
+        projectName(project_id: string) {
+            const project = this.$sessionStore.project_options.find((option: any) => {
+                return option.value === project_id;
             });
-            return subject ? subject.label : 'Unknown';
+            return project ? project.label : 'Unknown';
         },
         async getWebhooks(refresh = false) {
             if (refresh) {
