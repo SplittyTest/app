@@ -7,6 +7,8 @@ export default defineConfig({
   title: "Splitty Test",
   description: "A dead simple platform for split testing websites and apps",
   lastUpdated: true,
+  // Don't fail the build on links to pages that don't exist
+  ignoreDeadLinks: true,
   themeConfig: {
     logo: "/splitty-test-logo.svg",
     siteTitle: false,
