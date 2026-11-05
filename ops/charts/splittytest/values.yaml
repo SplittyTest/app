@@ -6,8 +6,8 @@
 #     --set migrator.image.repository=<registry>/splittytest-migrator
 #
 # Build the two images from the repository root:
-#   docker build -f ops/containers/Dockerfile          -t <registry>/splittytest:<tag> .
-#   docker build -f ops/containers/Dockerfile.migrator -t <registry>/splittytest-migrator:<tag> .
+#   docker build -f ops/containers/Dockerfile --target app      -t <registry>/splittytest:<tag> .
+#   docker build -f ops/containers/Dockerfile --target migrator -t <registry>/splittytest-migrator:<tag> .
 
 nameOverride: ""
 fullnameOverride: ""
@@ -17,7 +17,7 @@ fullnameOverride: ""
 # -----------------------------------------------------------------------------
 
 image:
-  # Built from ops/containers/Dockerfile
+  # Built from ops/containers/Dockerfile (--target app)
   repository: splittytest/splittytest
   # Defaults to the chart appVersion
   tag: ""
@@ -91,7 +91,7 @@ migrator:
   # install and upgrade. Migrations that already ran are skipped.
   enabled: true
   image:
-    # Built from ops/containers/Dockerfile.migrator
+    # Built from ops/containers/Dockerfile (--target migrator)
     repository: splittytest/splittytest-migrator
     tag: ""
     pullPolicy: IfNotPresent

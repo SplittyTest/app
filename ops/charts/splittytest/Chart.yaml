@@ -10,7 +10,7 @@ keywords:
   - experimentation
 
 # Chart version. Bump on every change to the chart.
-version: 0.2.0
+version: 0.2.1
 
 # Version of Splitty Test this chart deploys by default (used as the default image tag).
 appVersion: "1.0.0-beta1"
