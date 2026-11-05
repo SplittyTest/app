@@ -1,6 +1,6 @@
 import '@formatjs/intl-numberformat';
-// import '@formatjs/intl-numberformat/locale-data/en';
-import { useSessionStore } from '@/stores/Session';
+// import '@formatjs/intl-numberformat/locale-data/en.js';
+import { useSessionStore } from '@/stores/session';
 
 export function percentage(value: number, precision: number = 2): string {
 	const sessionStore = useSessionStore();

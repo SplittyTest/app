@@ -53,7 +53,7 @@
 </template>
 
 <script lang="ts">
-import { rules } from '@splitty-test/validation';
+import { rules } from '@splittytest/validation';
 import { snakeCase } from 'lodash-es';
 import { defineComponent } from 'vue';
 

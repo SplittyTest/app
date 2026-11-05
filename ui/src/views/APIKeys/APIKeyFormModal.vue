@@ -86,7 +86,7 @@
 <script lang="ts">
 import { cloneDeep, omit } from 'lodash-es';
 import { defineComponent } from 'vue';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 const default_api_key = {
     prefix: '',

@@ -1,22 +1,22 @@
-import { createWebHistory, createRouter } from 'vue-router';
-import Home from '@/views/Home.vue';
-import Login from '@/views/Auth/Login.vue';
-import ForgotPassword from '@/views/Auth/ForgotPassword.vue';
-import ResetPassword from '@/views/Auth/ResetPassword.vue';
-import Private from '@views/Private.vue';
-import Public from '@views/Public.vue';
+import useToast from '@/lib/utils/useToast';
+import { useSessionStore } from '@/stores/session';
 import AudienceForm from '@/views/Audiences/Form.vue';
 import AudiencesList from '@/views/Audiences/List.vue';
+import ForgotPassword from '@/views/Auth/ForgotPassword.vue';
+import Login from '@/views/Auth/Login.vue';
+import ResetPassword from '@/views/Auth/ResetPassword.vue';
+import Home from '@/views/Home.vue';
 import MetricForm from '@/views/Metrics/Form.vue';
 import MetricsList from '@/views/Metrics/List.vue';
+import ProjectForm from '@/views/Projects/Form/Form.vue';
+import ProjectsList from '@/views/Projects/List.vue';
 import Settings from '@/views/Settings/Settings.vue';
 import SplitTestDetails from '@/views/SplitTests/Details.vue';
 import SplitTestForm from '@/views/SplitTests/Form/Form.vue';
 import SplitTestList from '@/views/SplitTests/List.vue';
-import ProjectForm from '@/views/Projects/Form/Form.vue';
-import ProjectsList from '@/views/Projects/List.vue';
-import { useSessionStore } from '@/stores/Session';
-import useToast from '@/lib/utils/useToast';
+import Private from '@views/Private.vue';
+import Public from '@views/Public.vue';
+import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
 	// Public routes

@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@arpeely/sample-size-calculator": "^1.0.3",
-    "@clickhouse/client": "^1.24.1",
+    "@clickhouse/client": "^1.25.0",
     "@duckdb/node-api": "^2.0.0-r.1",
     "@founderpath/kysely-clickhouse": "^1.7.0",
     "@oorabona/kysely-duckdb": "^0.5.1",
@@ -28,7 +28,7 @@
     "cors": "^2.8.6",
     "crypto": "^1.0.1",
     "dayjs": "^1.11.23",
-    "duckdb": "^1.4.4",
+    "dotenv": "^18.0.9",
     "eventemitter3": "^5.0.4",
     "express": "^5.3.0",
     "express-session": "^1.19.0",
@@ -38,8 +38,7 @@
     "ip-range-check": "^0.2.1",
     "isbot": "^5.2.2",
     "jwt-simple": "^0.6.1",
-    "kysely": "^0.29.7",
-    "kysely-duckdb": "^0.4.0",
+    "kysely": "^0.29.8",
     "lodash-es": "^4.18.1",
     "modern-async": "^2.0.4",
     "multer": "^2.5.0",
@@ -54,7 +53,7 @@
     "run-parallel": "^1.2.0",
     "sqlstring": "^2.3.3",
     "supertest": "^7.3.1",
-    "tslib": "~2.8",
+    "tslib": "~2.9",
     "ulid": "^3.0.2",
     "zod": "^4.6.7"
   },
@@ -85,7 +84,6 @@
     "@types/supertest": "^7.2.1",
     "@typescript-eslint/eslint-plugin": "^8.72.1",
     "@typescript-eslint/parser": "^8.72.1",
-    "dotenv": "^18.0.9",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.17.0",
@@ -96,7 +94,7 @@
     "ts-api-utils": "~2.5",
     "ts-jest": "~29.4",
     "ts-node": "^10.9.2",
-    "tsc-alias": "^1.9.9",
+    "tsc-alias": "^1.9.10",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.23.15",
     "typescript": "~5.9"
@@ -120,5 +118,15 @@
     "test:watch": "jest --watch"
   },
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "bcrypt@6.0.0": true,
+    "better-sqlite3@13.0.3": true,
+    "dtrace-provider@0.8.8": true,
+    "fsevents@2.3.3": true,
+    "unrs-resolver@1.12.2": true,
+    "core-js-pure@3.51.0": true,
+    "esbuild@0.28.2": true
+  }
 }

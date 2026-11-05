@@ -10,10 +10,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { useSessionStore } from '@/stores/session';
 import CustomToast from '@components/CustomToast.vue';
 import { mapStores } from 'pinia';
-import { useSessionStore } from '@/stores/Session';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name : 'PublicWrapper',

@@ -20,13 +20,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { useSessionStore } from '@/stores/session';
+import OutcomeModal from '@/views/SplitTests/Modals/OutcomeModal.vue';
 import CustomConfirm from '@components/CustomConfirm.vue';
 import CustomToast from '@components/CustomToast.vue';
 import Toolbar from '@components/Toolbar.vue';
-import OutcomeModal from '@/views/SplitTests/Modals/OutcomeModal.vue';
 import { mapStores } from 'pinia';
-import { useSessionStore } from '@/stores/Session';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'PrivateWrapper',

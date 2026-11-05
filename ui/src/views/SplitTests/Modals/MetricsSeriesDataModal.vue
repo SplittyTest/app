@@ -10,7 +10,7 @@
         </template>
 		<div class="modal-content">
 			<div v-if="loading" class="loading-mask">
-				<ProgressSpinner :loading="loading" strokeWidth="3" class="m-4" v-if="loading"/>
+				<ProgressSpinner :loading="loading" :strokeWidth="3" class="m-4" v-if="loading"/>
 			</div>
 			<div class="flex-row items-start!">
 				<div class="chart flex-auto">

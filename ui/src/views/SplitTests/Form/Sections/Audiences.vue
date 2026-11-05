@@ -93,7 +93,7 @@
 
 <script lang="ts">
 import { title } from '@lib/filters';
-import { rules } from '@splitty-test/validation';
+import { rules } from '@splittytest/validation';
 import { defineComponent } from 'vue';
 
 export default defineComponent({

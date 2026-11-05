@@ -8,7 +8,7 @@
         </template>
         <template v-if="loading">
             <div class="flex items-center w-full min-h-50 loading">
-                <ProgressSpinner :loading="loading" strokeWidth="3" />
+                <ProgressSpinner :loading="loading" :strokeWidth="3" />
             </div>
         </template>
         <template v-else>

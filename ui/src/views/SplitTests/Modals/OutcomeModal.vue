@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { useEventBus } from '@lib/utils/eventBus';
-import { FieldValidation, rules, useFormValidator } from '@splitty-test/validation';
+import { FieldValidation, rules, useFormValidator } from '@splittytest/validation';
 import { defineComponent } from 'vue';
 
 const emitter = useEventBus();

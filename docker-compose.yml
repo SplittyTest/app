@@ -3,6 +3,10 @@
 #   cp api/.env .env      # or create .env from the keys listed below
 #   docker compose up --build
 #
+# Both images come from ops/containers/Dockerfile (targets `app` and `migrator`)
+# and share the API dependency layer, so it's built once and reused until
+# api/package-lock.json changes.
+#
 # App:      http://localhost:3000   (API + built UI)
 # Login:    admin@splittytest.com — the password is generated and printed in the
 #           migrate-store logs (`docker compose logs migrate-store`), unless INIT_USER sets one
@@ -51,6 +55,7 @@ services:
     build:
       context: .
       dockerfile: ops/containers/Dockerfile
+      target: app
     image: splittytest/app:local
     ports:
       - "${APP_PORT:-3000}:3000"
@@ -72,7 +77,8 @@ services:
   migrate-store:
     build:
       context: .
-      dockerfile: ops/containers/Dockerfile.migrator
+      dockerfile: ops/containers/Dockerfile
+      target: migrator
     image: splittytest/migrator:local
     command: ["migrate:postgres"]
     environment:

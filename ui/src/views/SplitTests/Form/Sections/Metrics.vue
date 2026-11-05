@@ -110,7 +110,7 @@
 
 <script lang="ts">
 import { title } from '@lib/filters';
-import { rules } from '@splitty-test/validation';
+import { rules } from '@splittytest/validation';
 import { sortBy } from 'lodash-es';
 import { defineComponent } from 'vue';
 

@@ -36,7 +36,7 @@
         >
             <template #loading>
                 <div class="loading-mask">
-                    <ProgressSpinner :loading="loading" strokeWidth="3"/>
+                    <ProgressSpinner :loading="loading" :strokeWidth="3"/>
                 </div>
             </template>
             <template #empty>

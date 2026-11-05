@@ -104,7 +104,7 @@
 </template>
 
 <script lang="ts">
-import { useFormValidator } from '@splitty-test/validation';
+import { useFormValidator } from '@splittytest/validation';
 import { hash } from 'hash-it';
 import { cloneDeep, defaultsDeep } from 'lodash-es';
 import { useConfirm } from 'primevue/useconfirm';

@@ -1,6 +1,6 @@
+import { useSessionStore } from '@/stores/session';
 import '@formatjs/intl-numberformat';
-import '@formatjs/intl-numberformat/locale-data/en';
-import { useSessionStore } from '@/stores/Session';
+import '@formatjs/intl-numberformat/locale-data/en.js';
 
 export function currency(value: number) {
 	const sessionStore = useSessionStore();

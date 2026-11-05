@@ -132,7 +132,7 @@
 </template>
 
 <script lang="ts">
-import { rules, useFormValidator } from '@splitty-test/validation';
+import { rules, useFormValidator } from '@splittytest/validation';
 import { cloneDeep, omit } from 'lodash-es';
 import { defineComponent } from 'vue';
 

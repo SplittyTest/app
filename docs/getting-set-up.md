@@ -174,8 +174,8 @@ To run Splitty Test on Kubernetes, use the Helm chart in `ops/charts/splittytest
 The chart uses two images: the app, and the migrator that runs the database migrations. Build both from the root of the repository:
 
 ```bash
-$ docker build -f ops/containers/Dockerfile          -t <registry>/splittytest:1.0.0-beta1 .
-$ docker build -f ops/containers/Dockerfile.migrator -t <registry>/splittytest-migrator:1.0.0-beta1 .
+$ docker build -f ops/containers/Dockerfile --target app      -t <registry>/splittytest:1.0.0-beta1 .
+$ docker build -f ops/containers/Dockerfile --target migrator -t <registry>/splittytest-migrator:1.0.0-beta1 .
 $ docker push <registry>/splittytest:1.0.0-beta1
 $ docker push <registry>/splittytest-migrator:1.0.0-beta1
 ```

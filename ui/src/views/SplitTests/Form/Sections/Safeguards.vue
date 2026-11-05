@@ -66,7 +66,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { rules } from '@splitty-test/validation';
+import { rules } from '@splittytest/validation';
 
 export default defineComponent({
     name : 'SplitTestFormSafeguards',

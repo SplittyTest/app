@@ -3,38 +3,62 @@ import { ExpandedTest, Metric, zEventSchema, zSessionSchema } from '@/types/sche
 import dayjs from '@lib/dayjs';
 import { assertSafeIdentifier } from '@/lib/Utils/assertSafeIdentifier';
 import log from '@lib/Logger';
-import { Database } from 'duckdb';
+import { DuckDBConnection, DuckDBInstance, DuckDBType, INTEGER } from '@duckdb/node-api';
 
-// Helper to promisify duckdb queries
-// Helper to promisify duckdb queries
-function runAll(conn: any, sql: string, params: any[] = []): Promise<any[]> {
-	return new Promise((resolve, reject) => {
-		conn.all(sql, ...params, (err: Error, rows: any[]) => {
-			if (err) return reject(err);
-			resolve(rows);
-		});
-	});
+// Bind JS values the way the legacy `duckdb` package did: whole numbers as
+// INTEGER, Dates as ISO strings, undefined as NULL. Everything else is inferred.
+function bindParams(params: any[]): { values: any[]; types: (DuckDBType | undefined)[] } {
+	const values: any[] = [];
+	const types: (DuckDBType | undefined)[] = [];
+	for (const p of params) {
+		if (p instanceof Date) {
+			values.push(p.toISOString());
+			types.push(undefined);
+		} else if (typeof p === 'number' && Number.isInteger(p) && Math.abs(p) <= 2147483647) {
+			values.push(p);
+			types.push(INTEGER);
+		} else {
+			values.push(p === undefined ? null : p);
+			types.push(undefined);
+		}
+	}
+	return { values, types };
 }
 
-function runExec(conn: any, sql: string, params: any[] = []): Promise<void> {
-	return new Promise((resolve, reject) => {
-		conn.run(sql, ...params, (err: Error) => {
-			if (err) return reject(err);
-			resolve();
-		});
-	});
+// Large integer results (SUM, COUNT, HUGEINT) come back as bigint; convert them
+// to numbers so rows stay JSON-serialisable and work with existing maths.
+function normaliseRow(row: Record<string, any>): Record<string, any> {
+	for (const key of Object.keys(row)) {
+		if (typeof row[key] === 'bigint') row[key] = Number(row[key]);
+	}
+	return row;
+}
+
+async function runAll(conn: Promise<DuckDBConnection>, sql: string, params: any[] = []): Promise<any[]> {
+	const { values, types } = bindParams(params);
+	const reader = await (await conn).runAndReadAll(sql, values, types as any);
+	return reader.getRowObjectsJS().map((row) => normaliseRow(row as Record<string, any>));
+}
+
+async function runExec(conn: Promise<DuckDBConnection>, sql: string, params: any[] = []): Promise<void> {
+	const { values, types } = bindParams(params);
+	await (await conn).run(sql, values, types as any);
 }
 
 export class DuckDB implements OLAPDB {
-	db: Database;
-	conn: any;
+	instance?: DuckDBInstance;
+	conn: Promise<DuckDBConnection>;
 	path: string;
 
 	constructor(path: string) {
-		// Expect path from config: config.get('db.metrics.duckdb')
+		// Expect path from config: config.get('db.olap.duckdb.path')
 		this.path = path;
-		this.db = new Database(this.path);
-		this.conn = this.db.connect();
+		this.conn = (async () => {
+			this.instance = await DuckDBInstance.create(path);
+			return this.instance.connect();
+		})();
+		// Log startup failures; queries awaiting this.conn still see the error
+		this.conn.catch((err) => log.error(err));
 	}
 
 	private variationFilter(): string {
@@ -390,7 +414,8 @@ export class DuckDB implements OLAPDB {
 
 	async disconnect(): Promise<void> {
 		try {
-			await this.conn.close();
+			(await this.conn).closeSync();
+			this.instance?.closeSync();
 		} catch (err) {
 			log.error(err);
 		}

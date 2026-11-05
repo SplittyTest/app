@@ -1,5 +1,4 @@
-import type { useSessionStore } from '@/stores/Session';
-import Vue from 'vue';
+import type { useSessionStore } from '@/stores/session';
 
 declare module 'vue/types/vue' {
 	interface Vue {

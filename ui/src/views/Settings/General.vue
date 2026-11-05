@@ -75,7 +75,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { useFormValidator } from '@splitty-test/validation';
+import { useFormValidator } from '@splittytest/validation';
 import { cloneDeep } from 'lodash-es';
 
 export default defineComponent({

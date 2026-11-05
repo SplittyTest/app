@@ -1,18 +1,27 @@
-.env
-api/config/local*
-api/config/test*
+# Only api/ and ui/ are used by ops/containers/Dockerfile; keep everything else
+# out of the build context so it uploads quickly.
+*
+!api/
+!ui/
 
-# Keep host builds out of the image. node_modules from macOS contain native
-# binaries (bcrypt, better-sqlite3, duckdb) that won't run in the Linux image.
+# Host builds and native binaries from macOS won't run in the Linux image
 **/node_modules
 **/dist
+**/coverage
+**/.tmp
+
+# Secrets and local config
 **/.env
 **/.env.*
 !**/.env.example
-**/.DS_Store
+api/config/local*
+api/config/test*
+
+# Not needed in images
+api/tests
+**/*.md
+**/*.MD
 **/*.log
-.git
-.github
-.vscode
-docs
-coverage
+**/.DS_Store
+**/.vscode
+**/.idea

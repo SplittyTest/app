@@ -1,4 +1,4 @@
-import { useSessionStore } from '@/stores/Session';
+import { useSessionStore } from '@/stores/session';
 
 export function num(value: number) {
 	const sessionStore = useSessionStore();

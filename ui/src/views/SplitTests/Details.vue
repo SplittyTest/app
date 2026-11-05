@@ -335,20 +335,20 @@
 </template>
 
 <script lang="ts">
-import { useSessionStore } from '@/stores/Session';
+import { escapeHtml, renderMarkdown } from '@/lib/utils/safeHtml';
+import { useSessionStore } from '@/stores/session';
+import CommentModal from '@/views/SplitTests/Modals/CommentModal.vue';
+import MetricsModal from '@/views/SplitTests/Modals/MetricsModal.vue';
+import VariationDataModal from '@/views/SplitTests/Modals/VariationDataModal.vue';
 import ConfirmDelete from '@components/ConfirmDelete.vue';
 import dayjs from '@lib/dayjs';
 import currency from '@lib/utils/currency';
 import { useEventBus } from '@lib/utils/eventBus';
 import num from '@lib/utils/num';
 import percentage from '@lib/utils/percentage';
-import CommentModal from '@/views/SplitTests/Modals/CommentModal.vue';
-import MetricsModal from '@/views/SplitTests/Modals/MetricsModal.vue';
-import VariationDataModal from '@/views/SplitTests/Modals/VariationDataModal.vue';
 import { useMagicKeys } from '@vueuse/core';
 import { hash } from 'hash-it';
 import { cloneDeep, every, get, isNaN, startCase } from 'lodash-es';
-import { escapeHtml, renderMarkdown } from '@/lib/utils/safeHtml';
 import { mapStores } from 'pinia';
 import type Chart from 'primevue/chart';
 import type { ConfirmationOptions } from 'primevue/confirmationoptions';
@@ -585,7 +585,7 @@ export default defineComponent({
 									lineWidth: dataset.borderWidth ?? 2,
 									strokeStyle: dataset.borderColor,
 									text: (dataset.label ?? '').slice(-1),
-								})).sort((a, b) => a.text.localeCompare(b.text)); // Sort legend labels alphabetically
+								})).sort((a: { text: string }, b: { text: string }) => a.text.localeCompare(b.text)); // Sort legend labels alphabetically
 							},
 							padding: 30,
 						}
@@ -1206,8 +1206,8 @@ h2 {
 		.tools {
 			display: none;
 			position: absolute;
-			top: 0;
 			right: 0;
+			top: 0;
 		}
 	}
 	

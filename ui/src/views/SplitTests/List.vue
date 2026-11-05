@@ -373,7 +373,7 @@
 <script lang="ts">
 import { escapeHtml } from '@/lib/utils/safeHtml';
 import { defineComponent } from 'vue';
-import { forIn, isEqual, isUndefined, remove, set, sortBy, sumBy, uniqBy } from 'lodash-es';
+import { forIn, isEqual, isUndefined, remove, set, sortBy, sumBy } from 'lodash-es';
 import ArchiveToggle from '@/components/ArchiveToggle.vue';
 import FilterToggle from '@/components/FilterToggle.vue';
 import { title } from '@lib/filters';

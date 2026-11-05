@@ -112,7 +112,7 @@
 import { defineComponent } from 'vue';
 import JsonEditor from '@components/JsonEditor.vue';
 import { cloneDeep, isEmpty, isNumber, snakeCase } from 'lodash-es';
-import { useFormValidator, rules } from '@splitty-test/validation';
+import { useFormValidator, rules } from '@splittytest/validation';
 
 export default defineComponent({
     name: 'SectionForm',
