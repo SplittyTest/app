@@ -5,7 +5,6 @@ import AudiencesList from '@/views/Audiences/List.vue';
 import ForgotPassword from '@/views/Auth/ForgotPassword.vue';
 import Login from '@/views/Auth/Login.vue';
 import ResetPassword from '@/views/Auth/ResetPassword.vue';
-import Home from '@/views/Home.vue';
 import MetricForm from '@/views/Metrics/Form.vue';
 import MetricsList from '@/views/Metrics/List.vue';
 import ProjectForm from '@/views/Projects/Form/Form.vue';
@@ -16,7 +15,7 @@ import SplitTestForm from '@/views/SplitTests/Form/Form.vue';
 import SplitTestList from '@/views/SplitTests/List.vue';
 import Private from '@views/Private.vue';
 import Public from '@views/Public.vue';
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteLocationRaw } from 'vue-router';
 
 const routes = [
 	// Public routes
@@ -26,7 +25,7 @@ const routes = [
 		children: [
 			{
 				path: '/',
-				component: Home,
+				redirect: '/projects',
 			},
 			{
 				path: 'login',
@@ -182,33 +181,46 @@ const router = createRouter({
 	routes,
 });
 
+/**
+ * Login page location that sends the user back to `redirect` after signing in.
+ */
+export function loginLocation(redirect?: string): RouteLocationRaw {
+	if (!redirect || redirect === '/' || redirect.startsWith('/login')) {
+		return { path: '/login' };
+	}
+	return { path: '/login', query: { redirect } };
+}
+
 router.beforeEach(async (to) => {
 	const sessionStore = useSessionStore();
 	const toast = useToast();
 
-	try {
-		if (to.meta.private) {
-			await sessionStore.checkAuth();
-		}
+	if (to.meta.private) {
+		const had_user = !!sessionStore.user;
+		const authenticated = await sessionStore.checkAuth();
 
-		// Check if the user has permissions for the route
-		if (to.meta.role && !sessionStore.minRole(to.meta.role as string)) {
-			toast.add({
-				summary: 'Access Denied',
-				detail: 'You do not have permission to access this page.',
-				severity: 'danger',
-				life: 5000,
-			});
-			return false;
-		}
-		return true;
-	} catch (err: any) {
-		// Redirect to login for auth errors
-		if (err.response?.status === 401) {
-			sessionStore.setFlashMessage('You have been logged out', 'danger', 5000);
-			return { path: '/login?!' };
+		// Not signed in (or the session expired): send them to the login page
+		if (!authenticated) {
+			if (had_user) {
+				sessionStore.setFlashMessage('Your session has expired. Please log in again.', 'danger', 5000);
+			} else {
+				sessionStore.setFlashMessage('Please log in to continue', 'info', 5000);
+			}
+			return loginLocation(to.fullPath);
 		}
 	}
+
+	// Check if the user has permissions for the route
+	if (to.meta.role && !sessionStore.minRole(to.meta.role as string)) {
+		toast.add({
+			summary: 'Access Denied',
+			detail: 'You do not have permission to access this page.',
+			severity: 'danger',
+			life: 5000,
+		});
+		return false;
+	}
+	return true;
 });
 
 export default router;

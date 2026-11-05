@@ -96,7 +96,10 @@ export default defineComponent({
             if (is_valid) {
                 const user = await this.$sessionStore.login(this.form);
                 if (user) {
-                    this.$router.push('/projects');
+                    // Only follow internal paths, so ?redirect= can't send users off-site
+                    const redirect = this.$route.query.redirect;
+                    const is_safe = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//');
+                    this.$router.push(is_safe ? redirect : '/projects');
                 }
             }
         }

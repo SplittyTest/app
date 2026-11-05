@@ -93,12 +93,16 @@ export const useSessionStore = defineStore('session', {
 				return option;
 			});
 		},
-		async checkAuth() {
-			// Returns true if auth check passes
-			const { data } = await $API.get('api/auth');
-			if (data.user) {
-				this.user = data.user;
+		async checkAuth(): Promise<boolean> {
+			// Returns true if the user has a valid session. Any failure (401/403
+			// from the API, network error) counts as signed out.
+			try {
+				const { data } = await $API.get('api/auth');
+				this.user = data?.user ?? null;
+			} catch {
+				this.user = null;
 			}
+			return !!this.user;
 		},
 		minRole(role: string) {
 			// Default to the lowest access level if no user is found
