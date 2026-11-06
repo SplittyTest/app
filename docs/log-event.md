@@ -1,97 +1,49 @@
 # Log Event Endpoint
 
-The log event endpoint saves a log of a user action on the site.
+Records an action a visitor took, such as a click or a purchase.
 
 ## Endpoint Details
 
 **Path:** `/split-test/log-event`
 <br>**Method:** `POST`
 
-**Payload:**
-* **type:** [string] - The slug for the event type that occurred.
-* **value:** [number] - The value to assign the user action. When logging a simple event rate, this value is typically `1`, but for an event like a purchase, you may want to put the purchase total or number of products purchased.
-* **data:** [object] - A plain object with details about the user. This will be appended to the user session.
+### Payload
 
-### Return Values
+* **type** [string] – The event type. It should match the event type of a metric in your project.
+* **value** [number] – The event's value. Use `1` to count occurrences, or an amount such as an order total for value-based metrics.
+* **data** [object] – (Optional) Details about the visitor, merged into their session.
 
-<div style="width: 100%; overflow-x: auto;">
-  <table style="width: 100%; border-collapse: collapse;">
-    <thead>
-      <tr style="background-color: var(--vp-c-bg-soft);">
-        <th style="padding: 12px; border: 1px solid var(--vp-c-divider); text-align: left;">Status</th>
-        <th style="padding: 12px; border: 1px solid var(--vp-c-divider); text-align: left;">Data Type</th>
-        <th style="padding: 12px; border: 1px solid var(--vp-c-divider); text-align: left;">Reason</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">204</td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">(Empty)</td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">There was no error but no event was logged due to filters or ome other reason</td>
-      </tr>
-      <tr>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">201</td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);"><pre class="text-xs">
-{
-    event_id: string;
-    session_id: string;
-}</pre></td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">The event was successfully logged</td>
-      </tr>
-      <tr>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">400</td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);"><pre class="text-xs">
-{
-    statusCode: number;
-    error: string;
-    reason?: string;
-}</pre>
-        </td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">There was a problem with the payload you sent to the endpoint</td>
-      </tr>
-      <tr>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">500</td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);"><pre class="text-xs">
-{
-    statusCode: number;
-    error: string;
-    reason?: string;
-}</pre>
-        </td>
-        <td style="padding: 12px; border: 1px solid var(--vp-c-divider);">There was a problem on the server or an unknown error occured</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+### Responses
+
+| Status | Meaning |
+| --- | --- |
+| `201` | Request accepted. Returns `{ event_id, session_id }`. |
+| `204` | The request came from a filtered IP address or, in production, a known bot, so nothing was logged. No body. |
+| `400` | The payload is invalid. Returns `{ statusCode, error, reason? }`. |
+| `500` | Server error. Returns `{ statusCode, error, reason? }`. |
+
+::: info
+A `201` doesn't guarantee the event was stored. Events for unknown or untracked metrics are dropped unless the project's [logging settings](/projects#settings) allow them.
+:::
 
 ### Example Request
 
 ```js
-// We will use fetch for the example
-// Make the request to the participate endpoint
-const response = await fetch('https://mysplittytest.com/split-test/participate', {
+const response = await fetch('https://mysplittytest.com/split-test/log-event', {
     method: 'POST',
+    credentials: 'include',
     headers: {
         'Authorization': 'API-Key YOUR_API_KEY',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-        section_id: 'cta_button',
-        data: {
-            day_part: 'weekday'
-        }
-    });
+        type: 'cta_click',
+        value: 1,
+        data: { day_part: 'weekday' },
+    }),
 });
 
-// Parse the response
-if (response.ok) {
-    throw new Error('Unable to get test data!');
-}
-const { variation } = await response.json();
-
-// Apply the variation data where needed...
-const cta_button = document.getElementById('cta-button');
-if (cta_button && variation.data.label) {
-    cta_button.textContent = variation.data.label;
+if (response.status === 201) {
+    const { event_id } = await response.json();
 }
 ```

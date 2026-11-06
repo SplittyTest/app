@@ -5,12 +5,9 @@ outline:
 
 # Splitty Test Client
 
-The official [Splitty Test client library](https://www.npmjs.com/package/@splittytest/client) is available through NPM and is easy to use.
+The official [Splitty Test client library](https://www.npmjs.com/package/@splittytest/client) wraps the API for JavaScript and TypeScript projects.
 
 ## Installation
-
-#### NPM
-Install the Splitty Test client library as a dependency.
 
 ```bash
 npm install @splittytest/client
@@ -18,83 +15,84 @@ npm install @splittytest/client
 
 ## Usage
 
-Initialize the `SplittyTest` class.
 ```js
-import SplittyTest from '@SplittyTest/client';
+import SplittyTest from '@splittytest/client';
 
-const api_key = 'st-52d6c63d-OLiaQiS8BuaFcAEllx6MeOX0enjSpvEM575HOZCC8';
-const st = new SplittyTest(api_key, { host: 'https://mysplittytestapi.com' });
-```
+const st = new SplittyTest('YOUR_API_KEY', { host: 'https://mysplittytestapi.com' });
 
-Participate in a split test.
-```js
-const { variation } = st.participate('section_name', { ...user_data });
-```
+// Get a variation for a section
+const { variation } = await st.participate('section_name', { ...user_data });
 
-Log an event.
-```js
-const { event_id } = st.logEvent('event_name', { ...user_data });
+// Log an event
+const { event_id } = await st.logEvent('event_name', 1, { ...user_data });
 ```
 
 ## Class Methods
 
 ### Constructor
-Create a new instance of the SplittyTest class. The API key that is used will determine the test project for all requests.
-<div class="mono nowrap">SplittyTest(api_key: string, options: SplittyTestOptions): void</div>
+
+<div class="mono nowrap">new SplittyTest(api_key: string, options: SplittyTestOptions)</div>
+
+The API key sets the project for every request.
 
 **Arguments**
-* **api_key** [string] - A project-specific API key generated from the Splitty Test dashboard.
-* **options** [SplittyTestOptions] - Additional options for the SplittyTest instance.
-* **options.host** - The URL of the Splitty Test API you are making requests to.
-* **options.defaults** [object] - (Optional) An object containing data that will be appended to the user data of every request sent to the SplittyTest API.
+* **api_key** [string] – An API key from the Splitty Test dashboard.
+* **options.host** [string] – The URL of your Splitty Test API.
+* **options.defaults** [object] – (Optional) Data added to the visitor data of every request.
 
 ---
 
-### Participate
-Mark the current user as a participant in a test for the given section. If the user has already participated in a test for the section, the previously returned data will be returned.
+### participate
+
 ```ts
-SplittyTest.participate(section: string, data?: object, options?: object): Promise<SplitTestInfo>;
+st.participate(section: string, data?: object, options?: object): Promise<SplitTestInfo>;
 ```
 
+Places the visitor in a test for the section and returns their variation. If they're already in a test for that section, the same variation is returned.
+
 **Arguments**
-* **section** [string]: The section of the project to participate in a test for.
-* **data** [object] - (Optional) Data to append to the user's session. This data is used to track information about each user, apply test traffic and audience filters, and is used as the underyling options for test segmentation.
-* **options** [object] - (Optional) Additional options to send to the participate endpoint.
-* **options.test_id** - (Optional) A test_id to force the user to see.
-* **options.variation_id** - (Optional) A variation_id to force the user to see. This is useful for previewing variations.
+* **section** [string] – The section ID.
+* **data** [object] – (Optional) Visitor data saved to their session. Used for audience filters, traffic filters and segments.
+* **options.test_id** [string] – (Optional) Force a specific test.
+* **options.variation_id** [string] – (Optional) Force a specific variation, for previews.
 
-**Return Value** [JSON Object] - The method will return a JSON object containing information about the test and variation that was selected for the user. If there are no active tests for the section, an empty response with status `204` will return.
+**Returns**
+* **test_id** [string | null] – The selected test, or `null` if there's no active test, the visitor was skipped or filtered out, or a variation was forced.
+* **variation** [object | null] – The selected variation, or `null` if none was selected.
+* **variation.id** [string] – The variation ID.
+* **variation.data** [object] – The variation's data.
+* **session_id** [string] – The visitor's session ID.
 
-* **test_id** [string | null] - The ID of the test that was selected for the user or `null` if there are no active test, the test engine decided to skip this user, the user was filtered out, or a variation was forced.
-* **variation** [object | null] - Information about the variation that was selected for the user or `null` if no variation was selected.
-* **variation.id** [string] - The ID of the variation that was selected for the user.
-* **variation.data** [object] - The data associated with the variation.
-* **session_id** [string] - The user's session ID.
+If there's no active test for the section, the API responds with `204` and no data.
 
 ```json
-// Example return value
 {
     "test_id": "01KT63HN900NKPAN8RJB9NHNF6",
     "variation": {
         "id": "01KT63HN900NKPAN8RJB9NHNF6-B",
         "data": {
-            "headline": "Lorem Ipsom Dolor Sit Amet!"
+            "headline": "Lorem Ipsum Dolor Sit Amet!"
         }
     },
     "session_id": "01KT63K3DKMARFPWHANP444V8T"
 }
 ```
+
 ---
-### Log Event
-Log an event that was trigger by the user.
-<div class="mono nowrap">SplittyTest.logEvent(event: string, value: number, data?: object ): Promise&lt;{ id: string }&gt;</div>
+
+### logEvent
+
+```ts
+st.logEvent(event: string, value: number, data?: object): Promise<{ event_id: string; session_id: string }>;
+```
+
+Logs an action the visitor took.
 
 **Arguments**
-* **event** [string]: The ID (type) of the event that was triggered.
-* **value** [number]: The numeric value for the event. To track event rate, this should be set to `1`. For tracking things like average purchase price, you would enter the monetary value here (e.g. `42.75` for a purchase worth $42.75).
-* **data** [object] - (Optional) Data to append to the user's session. This data is used to track information about each user, apply test traffic and audience filters, and is used as the underyling options for test segmentation.
+* **event** [string] – The event type.
+* **value** [number] – Use `1` to count occurrences, or an amount for value-based metrics (e.g. `42.75` for a $42.75 purchase).
+* **data** [object] – (Optional) Visitor data saved to their session.
 
-**Return Value** [JSON object] - The method will return a JSON object containing the event ID and session ID.
-
-* **event_id** [string | null] - The ID of the logged event.
-* **session_id** [string | null] - The ID of the user session.
+**Returns**
+* **event_id** [string] – The logged event's ID.
+* **session_id** [string] – The visitor's session ID.

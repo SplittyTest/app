@@ -1,63 +1,61 @@
 # Projects
 
-A project is the term Splitty Test uses for a website or application that you will be running split tests on. Within a project there are multiple sections. A section is a specific part of the website or application that you want to test. A section can be any part of a project as small as something like a button, to as large as an entire page or series of pages. It's really up to you how granular you want your test to be.
+A **project** is a website or app you run split tests on. Each project contains **sections**: the specific parts you test. A section can be as small as a button or as large as a page or a series of pages.
 
-Before you run a split test, you must first define a (test) project and the sections within it. We create this heirarchy in order to control the assignment of tests to users of those projects.
+You need a project with at least one section before you can create a test. Splitty Test uses this structure to decide which tests a visitor can be placed in.
 
 ## Creating a Project
 
-To create a new test project in your Splitty Test dashboard, do the following:
+1. Click **Projects** in the main navigation.
+2. Click **New Test Project** in the upper-right corner.
+3. Fill out the form and click **Save Project**.
 
-1. Click on the "Projects" link in main navigation.
-2. Click the "New Test Project" button in the upper-right corner.
-3. Fill out the form and click "Save Project" at the bottom.
+## Project Form Fields
 
-### Project Form Fields
+### Project Details
 
-**Project Details**<br>
-Basic identifying information about the test project.
+* **Test Project Name** – A unique, recognizable name, usually the site or app name.
+* **Project ID** – A unique slug, e.g. `mywebsite_com`.
+* **Type** – Website, App or Other. Used for organization only.
+* **Description** – A short description to help your team identify the project.
 
-* **Test Project Name** - A unique and clearly identifiable name for your test project. Typically the application or website name.
-* **Project ID** - A unique slug to identify the test project. (e.g. `mywebsite_com` for mywebsite.com)
-* **Type** - Select the type of test project: Website, App, or Other. Helpful for categorization.
-* **Description** - A short description of the test project to help users identify it.
+### Sections
 
-**Sections**<br>
-The sections of the website that will have tests run against them. Click "Add Section" to add a new section. You can add as many sections as needed.
+Click **Add Section** to add as many as you need.
 
-* **Section ID** - A unique slug to identify the section. This will be sent with the `participate` request to retrieve an active test for the section.
-* **Description** - A short description of the section to help testers more easily identify it.
-* **Preview URL** - If applicable, the URL of where a tester might be able to preview the variants for a test. You can include variables in the preview URL that will be dynamically replaced in preview links. See "Previewing Variations" below for more info.
-* **Data** - This is the default data template that will be auto-loaded when creating variants for this section in a test. Typically this data is what you are making available on a website and adding it here as a default makes it easier to remember when creating a test.
-* **Testing Enabled** - You can toggle testing for this section to enable or disable serving tests at any time.
-* **Max Concurrent Tests** - It's typically not recommended that you run too many tests on a specific section at one time. You can set a limit here that will trigger logic to limit the number of tests being run simultaneously.
-* **Skip Test Frequency** - How often to skip serving a test to project users in one rotation. For instance, if set to two, for every three visitors that view the section, 2 of them will not receive a test. Set to 0 to serve tests to all users when there is an active test.
+* **Section ID** – A unique slug that your code sends as `section_id` in participate requests. Use lowercase letters, numbers and underscores.
+* **Description** – Helps testers identify the section.
+* **Preview URL** – (Optional) Where testers can preview variations. It can include variables; see [Previewing Variations](#previewing-variations).
+* **Data** – The default data template for new variations in this section. It usually mirrors the values your site lets you change.
+* **Testing Enabled** – Turns test serving on or off for this section.
+* **Max Concurrent Tests** – The most tests that can run on this section at once. Running many at once isn't recommended.
+* **Skip Test Frequency** – Holds some visitors out of testing. Each active test takes one slot in a rotation, and this value adds that many "skip" slots. With one active test and a value of `2`, two of every three visitors get no test. Set to `0` to include everyone.
 
-**Settings**<br>
-Additional settings for the project to determine how tests are served and data is logged.
+### Settings
 
-* **Testing Enabled** - You can toggle testing on and off for the project. If testing is disabled, no active tests will be served to users.
-* **Max Concurrent Tests** - Limit the number of active tests that can run on this test project at the same time.
-* **Log Untracked Events** - Enable this to log events that have not been added to metric tracking in an active test.
-* **Log unknown events** - Enable this to log events that have not been registered in the Splitty Test dashboard.
+* **Testing Enabled** – Turns test serving on or off for the whole project.
+* **Max Concurrent Tests** – The most tests that can run across the project at once.
+* **Log Untracked Events** – Stores events for metrics that no active test is tracking.
+* **Log Unknown Events** – Stores events whose type doesn't match any metric in the dashboard. Requires **Log Untracked Events** too.
 
 ## Previewing Variations
-Previewing variations requires the developer to setup some custom logic on their website or application, so certain values are called when the `participate` request is made. The `{{test_id}}` and `{{variation_id}}` values are dynamically replaced in preview links from tests. Add some basic logic that pulls the values from the URL into the `participate` request.
 
-**Example**
+Preview links let testers see a specific variation. To support them, read the IDs from the preview URL and pass them to your participate call.
+
+When Splitty Test builds a preview link, it replaces these variables in the section's Preview URL:
+
+* `{{test_id}}` – the test the link was opened from
+* `{{variation_id}}` – the variation being previewed
+
 ```js
-// preview_url: https://www.mywebsite.com/home?tid={{test_id}}&vid={{variation_id}}
+// Preview URL: https://www.mywebsite.com/home?tid={{test_id}}&vid={{variation_id}}
 
-const url_params = new URLSearchParams(window.location.search);
-const test_id = url_params.get('tid') || null;
-const variation_id = url_params.get('vid') || null;
+const params = new URLSearchParams(window.location.search);
 
 st.participate('home', {}, {
-    test_id,
-    variation_id
+    test_id: params.get('tid'),
+    variation_id: params.get('vid'),
 });
 ```
 
-**Preview URL Variables**
-* **test_id** - Replaced with the test_id of the test the preview link was clicked from.
-* **variation_id** - Replaced with the variation_id of the variation the preview link was clicked for.
+Previewed variations aren't recorded in your results.

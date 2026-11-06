@@ -1,41 +1,35 @@
 # API Authentication
 
-Authentication with the Splitty Test API is easy and will require a separate API-key for requests from each project. You will need a user with at least `Tester` privileges to complete the steps below.
+Every request to the Splitty Test API is authenticated with an API key. Each key belongs to one project, and every request made with it is assigned to that project. You'll need a user with the `tester` or `admin` role.
 
 ### Create a Project
 
-In the Splitty Test dashboard, first create a new project that you will be running tests on. A project can be a website or application.
-
-1. Click on the "Projects" link in the main menu.
-2. Click the "New Test Project" button in the upper-right corner.
-3. Fill out the form and click the "Save" button.
+If you don't have one yet, [create a project](/projects#creating-a-project) for the website or app you're testing.
 
 ### Create an API Key
 
-Once a project exists, you can create an API key for it. Any requests that are received using that API key will be assigned to the project the API key is attached to.
+1. Click **Settings** in the main navigation, then the **API Keys** tab.
+2. Click **New API Key** in the upper-right corner.
+3. Fill out the form and click **Save**.
+   * To allow requests from any IP address, add `0.0.0.0/0` to the IP whitelist (not recommended).
+   * To allow requests from any domain, add `*` to the domain whitelist (not recommended).
 
-1. Click on the "Settings" link in the main menu.
-2. Click on the "API Keys" tab.
-3. Click the "New API Key" button in the upper-right corner.
-4. Fill out the API key form and click the "Save" button.
-   * To allow all IPs for the API key, add `0.0.0.0/0` to the IP whitelist.
-   * To allow all domains for the API key, add `*` to the domain whitelist.
+The full key is shown **only once**, right after you save. Copy it somewhere safe. If you lose it, you can generate a new key, but the old one stops working.
 
-When you save the API key, a window will show with the full API key. Make sure to copy the key and keep it on hand. This is the only time the API key will show. You can generate a new API key if you lose the full key, but doing so will invalidate the old one.
+### Use the API Key
 
-### Using the API Key
-
-All requests made to the Splitty Test API from your website or application will be authenticated using the API key. Simply add the API key as a `Authorization` header on your requests. Make sure to prepend the API key with `API-Key`  when setting the `Authorization` header value (make sure there is a space between them).
+Send the key in the `Authorization` header, prefixed with `API-Key` and a space:
 
 ```js
-// Example using fetch 
-
 const response = await fetch('https://mysplittytestapi.com/split-test/participate', {
     method: 'POST',
+    credentials: 'include',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'API-Key st-35360708-w8I9kEV0oGRIbdRKyxycGCT4DHgRD44JVxU6zDSY9c'
+        'Authorization': 'API-Key YOUR_API_KEY',
     },
-    body: JSON.stringify(payload)
-})
+    body: JSON.stringify(payload),
+});
 ```
+
+Include `credentials: 'include'` so the browser keeps the session cookie that links a visitor's events to their variation.

@@ -1,28 +1,10 @@
 # Getting Set Up
 
-This is a guide for getting your own instance of Splitty Test up and running so you can begin testing. Remember to review the [license](license.html) information before spinning it up.
+This guide gets your own Splitty Test instance running. Review the [license](/license) first.
 
-Splitty Test is distributed as a source-available project. We want everyone to be able to use Splitty Test free-of-charge for personal or commercial use, but we want to protect our exclusive right to offer support and hosting as a service in the future. If you're interested in offering Splitty Test as a hosted service, you can [reach out to us](mailto:partners@splittytest.com).
+There are two supported ways to deploy: [Docker Compose](#docker) (simplest) and [Helm](#helm) on Kubernetes. You can also [run from source](#running-from-source).
 
-## Prerequisites
-* Clickhouse
-* Postgres
-* Redis
-
-## Database Migrations
-
-You can run the database migrations using **NPM**.
-
-1. Change the working directory to the `api` folder.
-```bash
-$ cd path/to/splitty-test/api
-```
-
-2. Run the migrate script for the database you are using.
-```bash
-$ npm run migrate:postgres
-$ npm run migrate:clickhouse
-```
+Splitty Test is source-available: it's free for personal and commercial use, but offering it as a hosted service is reserved. If you're interested in hosting it for others, [reach out to us](mailto:partners@splittytest.com).
 
 ## Docker
 
@@ -88,9 +70,9 @@ When the `app` container is running, open [http://localhost:3000](http://localho
 The first migration creates an admin user:
 
 * **Email:** `admin@splittytest.com`
-* **Password:** generated during the first migration and printed in its output (for Docker Compose: `docker compose logs migrate-store`). Set `INIT_USER` before the first run to choose your own.
+* **Password:** printed in the migration output (`docker compose logs migrate-store`)
 
-Change this password right after you sign in. You can also choose the first user's details before the first run by setting `INIT_USER` in your `.env` file:
+Change the password right after you sign in. To choose the first user yourself, set `INIT_USER` in `.env` before the first run:
 
 ```bash
 INIT_USER={"email":"me@example.com","password":"a-strong-password","first_name":"Jane","last_name":"Doe"}
@@ -233,7 +215,7 @@ The databases start first, then the migration Job runs. You can follow it with:
 $ kubectl -n splittytest logs -f job/splittytest-migrate
 ```
 
-When it finishes, open your ingress host and sign in as `admin@splittytest.com` with the generated password printed in the migration job's logs (`kubectl logs job/<release>-migrate`). Change the password right away. To choose the first user yourself, set `migrator.initUser` before the first install:
+When it finishes, open your ingress host and sign in as `admin@splittytest.com` with the generated password printed in the migration Job's logs. Change the password right away. To choose the first user yourself, set `migrator.initUser` before the first install:
 
 ```yaml
 migrator:
@@ -390,6 +372,24 @@ $ kubectl -n splittytest delete secret splittytest
 $ kubectl -n splittytest delete pvc -l app.kubernetes.io/instance=splittytest
 ```
 
+## Running From Source
+
+To run the API directly instead of in containers, you need:
+
+* Postgres
+* Redis with the RedisJSON module
+* ClickHouse
+
+From the `api` folder, run the migrations for each database:
+
+```bash
+$ cd path/to/splitty-test/api
+$ npm run migrate:postgres
+$ npm run migrate:clickhouse
+```
+
+See [Configuration](#configuration) for how to point the API at your databases.
+
 ## Configuration
 
 Splitty Test reads its settings with [node-config](https://github.com/node-config/node-config). The defaults live in `api/config/default.js`, and you can override them in three ways:
@@ -493,7 +493,7 @@ NODE_CONFIG='{"log":{"level":"info"},"app":{"url":"https://experiments.example.c
 With Helm, put these in `app.nodeConfig` in your values file instead of setting `NODE_CONFIG` yourself. See [Other settings](#other-settings) under Helm.
 :::
 
-## Using MailGun
+## Using Mailgun
 
 Splitty Test sends email through [Mailgun](https://www.mailgun.com/). Today it's only used for password reset emails. You can run Splitty Test without it; see [Running without email](#running-without-email).
 
